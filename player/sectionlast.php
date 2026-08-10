@@ -47,7 +47,7 @@ $wa_link_attr = htmlspecialchars($wa_link, ENT_QUOTES, 'UTF-8');
 // যদি লগইন না থাকে, তবে সোশ্যাল বাটন বা অন্য লিঙ্কে ক্লিক করলে login.php তে যাবে
 $protected_login = !$is_logged_in ? 'login.php' : '';
 
-$footer_site_name = !empty($settings['site_name']) ? $settings['site_name'] : 'SHA75';
+$footer_site_name = !empty($settings['site_name']) ? $settings['site_name'] : 'BAJIXWIN';
 $currentYear = date("Y");
 ?>
 
