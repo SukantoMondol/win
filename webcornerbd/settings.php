@@ -61,14 +61,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
     // Handle global Website/Admin Logo Upload
     if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
         $target_dir = "../assets/img/logo/";
-        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
+        @chmod($target_dir, 0777);
 
         $file_ext = strtolower(pathinfo($_FILES["app_logo"]["name"], PATHINFO_EXTENSION));
         $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
         if (in_array($file_ext, $allowed)) {
             $new_name = "site_logo_" . time() . "." . $file_ext;
             $target_file = $target_dir . $new_name;
-            if (move_uploaded_file($_FILES["app_logo"]["tmp_name"], $target_file)) {
+            if (@move_uploaded_file($_FILES["app_logo"]["tmp_name"], $target_file) || @copy($_FILES["app_logo"]["tmp_name"], $target_file)) {
+                @chmod($target_file, 0666);
                 $app_logo_path = "assets/img/logo/" . $new_name;
             }
         }
@@ -77,7 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
     // Handle Popup Image Upload
     if (isset($_FILES['popup_image']) && $_FILES['popup_image']['error'] == 0) {
         $target_dir = "../assets/img/banners/";
-        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
+        @chmod($target_dir, 0777);
         
         $file_ext = strtolower(pathinfo($_FILES["popup_image"]["name"], PATHINFO_EXTENSION));
         $new_name = "popup_" . time() . "." . $file_ext;
@@ -85,7 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
         
         $allowed = array("jpg", "png", "jpeg", "gif", "webp");
         if (in_array($file_ext, $allowed)) {
-            if (move_uploaded_file($_FILES["popup_image"]["tmp_name"], $target_file)) {
+            if (@move_uploaded_file($_FILES["popup_image"]["tmp_name"], $target_file) || @copy($_FILES["popup_image"]["tmp_name"], $target_file)) {
+                @chmod($target_file, 0666);
                 $popup_image_path = "assets/img/banners/" . $new_name;
             }
         }
@@ -109,13 +113,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['upload_slider'])) {
     if (isset($_FILES['slider_image']) && $_FILES['slider_image']['error'] == 0) {
         $target_dir = "../assets/img/banners/";
-        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
+        @chmod($target_dir, 0777);
         $file_extension = pathinfo($_FILES["slider_image"]["name"], PATHINFO_EXTENSION);
         $new_filename = "banner_" . time() . "." . $file_extension;
         $target_file = $target_dir . $new_filename;
         $allowed_types = array("jpg", "png", "jpeg", "gif", "webp");
         if (in_array(strtolower($file_extension), $allowed_types)) {
-            if (move_uploaded_file($_FILES["slider_image"]["tmp_name"], $target_file)) {
+            if (@move_uploaded_file($_FILES["slider_image"]["tmp_name"], $target_file) || @copy($_FILES["slider_image"]["tmp_name"], $target_file)) {
+                @chmod($target_file, 0666);
                 $db_path = "assets/img/banners/" . $new_filename;
                 $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
                 $msg = "New Banner Uploaded!";
