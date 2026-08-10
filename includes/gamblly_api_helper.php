@@ -283,6 +283,7 @@ if (!function_exists('gamblly_api_launch_game')) {
             'game_uid' => $gameUid,
             'home_url' => function_exists('game_api_site_url') ? rtrim(game_api_site_url('/'), '/') : '',
             'credit_amount' => number_format((float)$walletBalance, 2, '.', ''),
+            'currency' => strtoupper($currency),
             'currency_code' => strtoupper($currency),
             'language' => $config['language'],
             'platform' => (int)$config['platform'],
