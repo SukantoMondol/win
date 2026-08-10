@@ -80,6 +80,7 @@ if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?
     z-index: 70 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    padding-bottom: 120px !important;
 }
 #sidebar::-webkit-scrollbar { display: none !important; }
 #sidebar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
@@ -213,15 +214,15 @@ if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?
 
 /* === LOGOUT BOTTOM === */
 .sb-bottom-strip {
-    padding: 0 16px 40px 16px !important;
+    padding: 10px 16px 120px 16px !important;
 }
 .btn-logout {
-    background: rgba(239,68,68,0.08) !important;
-    border: 1px solid rgba(239,68,68,0.25) !important;
-    border-bottom: 3px solid rgba(180,30,30,0.5) !important;
-    color: #ef4444 !important;
-    padding: 12px !important;
-    border-radius: 10px !important;
+    background: #dc2626 !important;
+    border: 1px solid #ef4444 !important;
+    border-bottom: 3px solid #991b1b !important;
+    color: #ffffff !important;
+    padding: 13px !important;
+    border-radius: 12px !important;
     text-align: center !important;
     display: flex !important;
     align-items: center !important;
@@ -229,10 +230,10 @@ if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?
     gap: 8px !important;
     text-decoration: none !important;
     font-size: 14px !important;
-    font-weight: 700 !important;
+    font-weight: 800 !important;
     width: 100% !important;
     transition: all 0.15s !important;
-    box-shadow: 0 4px 0 rgba(120,20,20,0.4) !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
 }
 .btn-logout:active {
     transform: translateY(3px) !important;
