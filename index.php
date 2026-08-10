@@ -15,6 +15,8 @@ if (file_exists($db_path)) {
 }
 $functions_path = __DIR__ . '/includes/functions.php';
 if (file_exists($functions_path)) { require_once $functions_path; }
+$theme_helper_path = __DIR__ . '/includes/theme_helper.php';
+if (file_exists($theme_helper_path)) { require_once $theme_helper_path; }
 if (isset($conn) && !$conn->connect_error && function_exists('wcb_apply_category_name_patch')) {
     wcb_apply_category_name_patch($conn);
 }
@@ -86,6 +88,7 @@ $withdraw_url = $login_url . '?redirect=player/withdraw.php';
     <title><?php echo $site_name; ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <?php if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings); } ?>
     <style>
         :root {
             --bg-deep:    #071f18;

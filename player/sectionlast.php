@@ -49,6 +49,10 @@ $protected_login = !$is_logged_in ? 'login.php' : '';
 
 $footer_site_name = !empty($settings['site_name']) ? $settings['site_name'] : 'BAJIXWIN';
 $currentYear = date("Y");
+
+$theme_helper_file = __DIR__ . '/../includes/theme_helper.php';
+if (file_exists($theme_helper_file)) { require_once $theme_helper_file; }
+if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?? []); }
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

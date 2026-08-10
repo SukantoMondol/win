@@ -21,6 +21,9 @@ if (isset($conn) && !$conn->connect_error) {
     ensure_settings_column($conn, 'whatsapp_link', "varchar(255) DEFAULT '#'");
     ensure_settings_column($conn, 'popup_button_text', "varchar(100) DEFAULT NULL");
     ensure_settings_column($conn, 'popup_button_link', "varchar(255) DEFAULT NULL");
+    ensure_settings_column($conn, 'theme_bg', "varchar(255) DEFAULT 'linear-gradient(135deg, #071f18 0%, #0a2e22 50%, #071f18 100%)'");
+    ensure_settings_column($conn, 'theme_primary', "varchar(50) DEFAULT '#0d7a55'");
+    ensure_settings_column($conn, 'theme_accent', "varchar(50) DEFAULT '#f0c030'");
 }
 
 $msg = "";
@@ -95,9 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
         }
     }
 
+    // Theme Customizer Inputs
+    $theme_bg = trim($_POST['theme_bg'] ?? '');
+    $theme_primary = trim($_POST['theme_primary'] ?? '');
+    $theme_accent = trim($_POST['theme_accent'] ?? '');
+
     // Update Settings in DB
-    $stmt = $conn->prepare("UPDATE settings SET site_name=?, admin_panel_name=?, app_logo=?, risk_auto_lock_percent=?, marquee_text=?, telegram_link=?, facebook_link=?, instagram_link=?, whatsapp_link=?, popup_enabled=?, popup_title=?, popup_desc=?, popup_image=?, popup_button_text=?, popup_button_link=? WHERE id=1");
-    $stmt->bind_param("sssisssssisssss", $site_name, $admin_panel_name, $app_logo_path, $lock_percent, $marquee_text, $tg_link, $fb_link, $ig_link, $wa_link, $popup_enabled, $popup_title, $popup_desc, $popup_image_path, $popup_button_text, $popup_button_link);
+    $stmt = $conn->prepare("UPDATE settings SET site_name=?, admin_panel_name=?, app_logo=?, risk_auto_lock_percent=?, marquee_text=?, telegram_link=?, facebook_link=?, instagram_link=?, whatsapp_link=?, popup_enabled=?, popup_title=?, popup_desc=?, popup_image=?, popup_button_text=?, popup_button_link=?, theme_bg=?, theme_primary=?, theme_accent=? WHERE id=1");
+    $stmt->bind_param("sssisssssissssssss", $site_name, $admin_panel_name, $app_logo_path, $lock_percent, $marquee_text, $tg_link, $fb_link, $ig_link, $wa_link, $popup_enabled, $popup_title, $popup_desc, $popup_image_path, $popup_button_text, $popup_button_link, $theme_bg, $theme_primary, $theme_accent);
     
     if ($stmt->execute()) {
         $msg = "System configuration updated successfully.";
@@ -226,6 +234,71 @@ $sliders = $conn->query("SELECT * FROM sliders ORDER BY id DESC");
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Scrolling Marquee Text</label>
                                     <textarea name="marquee_text" rows="3" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-indigo-500 text-gray-700 transition shadow-sm"><?php echo htmlspecialchars($settings['marquee_text']); ?></textarea>
                                 </div>
+
+                                <!-- WEBSITE THEME & BACKGROUND CUSTOMIZER -->
+                                <div class="pt-4 border-t border-gray-200 bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 mt-4 space-y-4">
+                                    <h4 class="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fas fa-palette text-emerald-600"></i> Website Theme & Background Customizer
+                                    </h4>
+
+                                    <!-- Quick Presets -->
+                                    <div>
+                                        <label class="block text-[11px] font-bold text-gray-600 uppercase mb-2">Quick Theme Presets (১ ক্লিকে থিম পরিবর্তন):</label>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                            <button type="button" onclick="setPreset('#000000', '#0a2e22', '#f0c030')" class="px-3 py-2 text-xs font-bold text-white bg-black rounded-lg border border-gray-700 shadow-sm hover:scale-95 transition flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-full bg-black border border-white"></span> Pure Black
+                                            </button>
+                                            <button type="button" onclick="setPreset('linear-gradient(135deg, #071f18 0%, #0a2e22 50%, #071f18 100%)', '#0d7a55', '#f0c030')" class="px-3 py-2 text-xs font-bold text-white bg-emerald-900 rounded-lg border border-emerald-500 shadow-sm hover:scale-95 transition flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Emerald Casino
+                                            </button>
+                                            <button type="button" onclick="setPreset('linear-gradient(135deg, #0a1128 0%, #1c2541 50%, #0a1128 100%)', '#1c2541', '#38bdf8')" class="px-3 py-2 text-xs font-bold text-white bg-slate-900 rounded-lg border border-blue-500 shadow-sm hover:scale-95 transition flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-full bg-blue-500"></span> Midnight Blue
+                                            </button>
+                                            <button type="button" onclick="setPreset('linear-gradient(135deg, #140d02 0%, #291a05 50%, #140d02 100%)', '#291a05', '#fbbf24')" class="px-3 py-2 text-xs font-bold text-amber-100 bg-amber-950 rounded-lg border border-amber-500 shadow-sm hover:scale-95 transition flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-full bg-amber-400"></span> Dark Gold
+                                            </button>
+                                            <button type="button" onclick="setPreset('linear-gradient(135deg, #130326 0%, #28064d 50%, #130326 100%)', '#28064d', '#c084fc')" class="px-3 py-2 text-xs font-bold text-purple-100 bg-purple-950 rounded-lg border border-purple-500 shadow-sm hover:scale-95 transition flex items-center gap-2">
+                                                <span class="w-3 h-3 rounded-full bg-purple-400"></span> Deep Purple
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Background Color or Gradient CSS</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="theme_bg_input" name="theme_bg" value="<?php echo htmlspecialchars($settings['theme_bg'] ?? 'linear-gradient(135deg, #071f18 0%, #0a2e22 50%, #071f18 100%)'); ?>" class="w-full border border-gray-300 rounded p-2 text-xs font-mono bg-white shadow-sm focus:ring-2 focus:ring-emerald-400">
+                                            <input type="color" id="bg_picker" onchange="document.getElementById('theme_bg_input').value=this.value" value="#000000" class="h-9 w-12 rounded cursor-pointer border p-0 bg-white">
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 mt-1">Accepts solid colors (e.g. #000000) or CSS Gradients (e.g. linear-gradient(...)).</p>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Primary Theme Color</label>
+                                            <div class="flex items-center gap-2 bg-white border border-gray-300 rounded p-1">
+                                                <input type="color" id="primary_picker" name="theme_primary" onchange="document.getElementById('primary_code').innerText=this.value" value="<?php echo htmlspecialchars($settings['theme_primary'] ?? '#0d7a55'); ?>" class="h-8 w-10 rounded cursor-pointer border p-0">
+                                                <span class="text-xs font-mono text-gray-700 font-bold" id="primary_code"><?php echo htmlspecialchars($settings['theme_primary'] ?? '#0d7a55'); ?></span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Accent / Button Color</label>
+                                            <div class="flex items-center gap-2 bg-white border border-gray-300 rounded p-1">
+                                                <input type="color" id="accent_picker" name="theme_accent" onchange="document.getElementById('accent_code').innerText=this.value" value="<?php echo htmlspecialchars($settings['theme_accent'] ?? '#f0c030'); ?>" class="h-8 w-10 rounded cursor-pointer border p-0">
+                                                <span class="text-xs font-mono text-gray-700 font-bold" id="accent_code"><?php echo htmlspecialchars($settings['theme_accent'] ?? '#f0c030'); ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <script>
+                                function setPreset(bg, primary, accent) {
+                                    document.getElementById('theme_bg_input').value = bg;
+                                    document.getElementById('primary_picker').value = primary;
+                                    document.getElementById('accent_picker').value = accent;
+                                    document.getElementById('primary_code').innerText = primary;
+                                    document.getElementById('accent_code').innerText = accent;
+                                }
+                                </script>
 
                                 <div class="pt-4 border-t border-gray-100 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100 mt-2">
                                     <h4 class="text-xs font-bold text-yellow-700 uppercase mb-3 flex items-center gap-2">
