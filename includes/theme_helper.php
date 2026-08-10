@@ -33,12 +33,43 @@ if (!function_exists('get_site_theme_css')) {
                 {$bgCss}
                 color: {$text} !important;
             }
-            .site-header, .header-green, .app-banner-top {
+
+            /* Left Sidebar Container & Header */
+            #sidebar, .sb-header, #desktop-sidebar {
                 background: {$primary} !important;
+                background-color: {$primary} !important;
+                border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
             }
-            .app-banner-top-install, .btn-accent, .bg-gold, .btn-primary {
+
+            /* Left Sidebar Menu Tiles & Category Cards */
+            .sb-menu-card, .cat-pill, .cat-card, .sidebar-card, .sidebar-box {
+                background: rgba(0, 0, 0, 0.35) !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            }
+            .sb-menu-card:hover, .cat-pill.active {
+                border-color: {$accent} !important;
+                background: rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Sidebar Icons & Brand Titles */
+            .sb-card-icon, .sb-card-title, .sb-logo-text, .sec-title, .sec-title i, .cat-pill.active i {
+                color: {$accent} !important;
+            }
+
+            /* Header & Bottom Navigation Bar */
+            .site-header, .header-green, .app-banner-top, .bottom-nav, .bottom-nav-pill, .guest-nav, .announce-bar {
+                background: {$primary} !important;
+                background-color: {$primary} !important;
+                border-color: rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Bottom Nav Center Button & Action Buttons */
+            .nav-center-circle, .app-banner-top-install, .btn-accent, .bg-gold, .btn-primary, .btn-register {
                 background: {$accent} !important;
                 color: #000000 !important;
+            }
+            .nav-item.active i, .nav-item.active span, .bnav-item.active {
+                color: {$accent} !important;
             }
         </style>
         ";

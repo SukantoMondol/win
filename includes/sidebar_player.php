@@ -30,7 +30,9 @@ if (!function_exists('getLink')) {
             return "player/" . ltrim($page, '/');
         }
     }
-}
+$theme_helper_path = __DIR__ . '/theme_helper.php';
+if (file_exists($theme_helper_path)) { require_once $theme_helper_path; }
+if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?? []); }
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
