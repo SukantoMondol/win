@@ -1,0 +1,2 @@
+# Cleaned for local XAMPP environment
+# Removed cPanel ea-php handler that caused PHP files to download instead of execute

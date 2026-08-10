@@ -1,0 +1,146 @@
+/* Global page scroll/performance patch
+   Scope: player/web app pages only. Keeps the existing layout, but prevents
+   body/container scroll locking on mobile and desktop browsers. */
+html {
+    height: auto !important;
+    min-height: 100%;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scroll-behavior: auto !important;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: auto !important;
+    touch-action: pan-y pinch-zoom;
+}
+body {
+    height: auto !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
+}
+main,
+.page,
+.content,
+.page-wrap,
+.app-wrap,
+#app {
+    max-width: 100%;
+}
+img,
+video,
+canvas,
+iframe {
+    max-width: 100%;
+}
+.cat-nav-wrap,
+.games-section,
+.no-scrollbar,
+.desktop-sidebar,
+.overflow-y-auto,
+.overflow-x-auto,
+.bonus-body,
+.modal-card,
+.rj-promo-card {
+    -webkit-overflow-scrolling: touch;
+}
+.cat-nav-wrap,
+.no-scrollbar,
+.overflow-x-auto {
+    overscroll-behavior-x: contain;
+}
+.modal:not(.show):not(.open),
+.filter-modal:not(.open),
+#apiModal.hidden,
+#wcbPwaInstallPopup:not(.show) {
+    pointer-events: none !important;
+}
+.modal.show,
+.modal.open,
+.filter-modal.open,
+#wcbPwaInstallPopup.show {
+    pointer-events: auto !important;
+}
+.modal.show,
+.modal.open,
+.filter-modal.open {
+    overscroll-behavior: contain;
+}
+.modal-card,
+.rj-promo-card,
+.bonus-panel {
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+}
+@media (max-width: 768px) {
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+    .site-header,
+    .app-banner-top,
+    .mobile-bottom-nav,
+    .bottom-nav,
+    .desktop-sidebar,
+    .header-premium {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+    }
+    .site-header,
+    .app-banner-top,
+    .mobile-bottom-nav,
+    .bottom-nav,
+    .game-card-fav,
+    .balance-dropdown {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+    .game-card,
+    .promo-card,
+    .swiper-slide,
+    .cat-section,
+    .hot-section {
+        contain: content;
+    }
+    .game-card-img,
+    .promo-card img,
+    .swiper-slide img {
+        content-visibility: auto;
+        contain-intrinsic-size: 180px 120px;
+    }
+    .game-card,
+    .qa-btn,
+    .cat-pill,
+    .btn-see-all,
+    .btn-nav-arrow,
+    .partner-btn,
+    .gc-pill,
+    .app-banner-top-install {
+        transition-property: transform, background-color, color, border-color, opacity !important;
+        transition-duration: .12s !important;
+    }
+    .jackpot-plane-img,
+    #wcbDailyBonusWidget {
+        animation: none !important;
+    }
+    .jp-digit.changing {
+        animation: none !important;
+    }
+    .cat-nav-wrap {
+        scroll-snap-type: none !important;
+    }
+    #wcbDailyBonusWidget {
+        will-change: auto !important;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

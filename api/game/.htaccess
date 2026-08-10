@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteRule ^callback/?$ callback.php [L,QSA]
+RewriteRule ^get-user-amount/?$ get_user_amount.php [L,QSA]
+RewriteRule ^get-all-wallets/?$ get_all_wallets.php [L,QSA]
+</IfModule>

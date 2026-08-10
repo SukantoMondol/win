@@ -1,0 +1,372 @@
+<?php
+require '../includes/auth_session.php';
+require '../includes/db.php';
+require '../includes/functions.php';
+
+// Ensure support/social link columns exist so the patch works on the live DB without manual SQL import.
+function ensure_settings_column($conn, $column, $definition) {
+    $safeColumn = preg_replace('/[^a-zA-Z0-9_]/', '', $column);
+    $check = $conn->query("SHOW COLUMNS FROM settings LIKE '$safeColumn'");
+    if ($check && $check->num_rows == 0) {
+        @$conn->query("ALTER TABLE settings ADD COLUMN `$safeColumn` $definition");
+    }
+}
+
+if (isset($conn) && !$conn->connect_error) {
+    ensure_settings_column($conn, 'admin_panel_name', "varchar(120) DEFAULT NULL");
+    ensure_settings_column($conn, 'app_logo', "varchar(255) DEFAULT NULL");
+    ensure_settings_column($conn, 'telegram_link', "varchar(255) DEFAULT '#'");
+    ensure_settings_column($conn, 'facebook_link', "varchar(255) DEFAULT '#'");
+    ensure_settings_column($conn, 'instagram_link', "varchar(255) DEFAULT '#'");
+    ensure_settings_column($conn, 'whatsapp_link', "varchar(255) DEFAULT '#'");
+    ensure_settings_column($conn, 'popup_button_text', "varchar(100) DEFAULT NULL");
+    ensure_settings_column($conn, 'popup_button_link', "varchar(255) DEFAULT NULL");
+}
+
+$msg = "";
+$msg_type = "";
+
+// 1. HANDLE GENERAL SETTINGS UPDATE
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
+    $site_name = sanitize($conn, $_POST['site_name'] ?? '');
+    $admin_panel_name = sanitize($conn, $_POST['admin_panel_name'] ?? '');
+    if ($admin_panel_name === '') { $admin_panel_name = $site_name; }
+
+    $lock_percent = intval($_POST['risk_auto_lock_percent'] ?? 80);
+    $marquee_text = sanitize($conn, $_POST['marquee_text'] ?? '');
+    
+    // Social Links
+    $tg_link = sanitize($conn, $_POST['telegram_link'] ?? '#');
+    $fb_link = sanitize($conn, $_POST['facebook_link'] ?? '#');
+    $ig_link = sanitize($conn, $_POST['instagram_link'] ?? '#');
+    $wa_link = sanitize($conn, $_POST['whatsapp_link'] ?? '#');
+    
+    // Popup Settings
+    $popup_enabled = isset($_POST['popup_enabled']) ? 1 : 0;
+    $popup_title = sanitize($conn, $_POST['popup_title'] ?? '');
+    $popup_desc = sanitize($conn, $_POST['popup_desc'] ?? '');
+    $popup_button_text = sanitize($conn, $_POST['popup_button_text'] ?? '');
+    $popup_button_link = sanitize($conn, $_POST['popup_button_link'] ?? '');
+    
+    // Fetch existing images first
+    $popup_image_path = '';
+    $app_logo_path = '';
+    $current_q = $conn->query("SELECT popup_image, app_logo FROM settings WHERE id=1");
+    if ($current_q && $current_q->num_rows > 0) {
+        $existing_row = $current_q->fetch_assoc();
+        $popup_image_path = $existing_row['popup_image'] ?? '';
+        $app_logo_path = $existing_row['app_logo'] ?? '';
+    }
+
+    // Handle global Website/Admin Logo Upload
+    if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
+        $target_dir = "../assets/img/logo/";
+        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+
+        $file_ext = strtolower(pathinfo($_FILES["app_logo"]["name"], PATHINFO_EXTENSION));
+        $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
+        if (in_array($file_ext, $allowed)) {
+            $new_name = "site_logo_" . time() . "." . $file_ext;
+            $target_file = $target_dir . $new_name;
+            if (move_uploaded_file($_FILES["app_logo"]["tmp_name"], $target_file)) {
+                $app_logo_path = "assets/img/logo/" . $new_name;
+            }
+        }
+    }
+
+    // Handle Popup Image Upload
+    if (isset($_FILES['popup_image']) && $_FILES['popup_image']['error'] == 0) {
+        $target_dir = "../assets/img/banners/";
+        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        
+        $file_ext = strtolower(pathinfo($_FILES["popup_image"]["name"], PATHINFO_EXTENSION));
+        $new_name = "popup_" . time() . "." . $file_ext;
+        $target_file = $target_dir . $new_name;
+        
+        $allowed = array("jpg", "png", "jpeg", "gif", "webp");
+        if (in_array($file_ext, $allowed)) {
+            if (move_uploaded_file($_FILES["popup_image"]["tmp_name"], $target_file)) {
+                $popup_image_path = "assets/img/banners/" . $new_name;
+            }
+        }
+    }
+
+    // Update Settings in DB
+    $stmt = $conn->prepare("UPDATE settings SET site_name=?, admin_panel_name=?, app_logo=?, risk_auto_lock_percent=?, marquee_text=?, telegram_link=?, facebook_link=?, instagram_link=?, whatsapp_link=?, popup_enabled=?, popup_title=?, popup_desc=?, popup_image=?, popup_button_text=?, popup_button_link=? WHERE id=1");
+    $stmt->bind_param("sssisssssisssss", $site_name, $admin_panel_name, $app_logo_path, $lock_percent, $marquee_text, $tg_link, $fb_link, $ig_link, $wa_link, $popup_enabled, $popup_title, $popup_desc, $popup_image_path, $popup_button_text, $popup_button_link);
+    
+    if ($stmt->execute()) {
+        $msg = "System configuration updated successfully.";
+        $msg_type = "success";
+    } else {
+        error_log('Settings update failed: ' . $conn->error);
+        $msg = "Unable to update settings right now.";
+        $msg_type = "error";
+    }
+}
+
+// 2. HANDLE NEW SLIDER UPLOAD (Same as before)
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['upload_slider'])) {
+    if (isset($_FILES['slider_image']) && $_FILES['slider_image']['error'] == 0) {
+        $target_dir = "../assets/img/banners/";
+        if (!is_dir($target_dir)) { mkdir($target_dir, 0777, true); }
+        $file_extension = pathinfo($_FILES["slider_image"]["name"], PATHINFO_EXTENSION);
+        $new_filename = "banner_" . time() . "." . $file_extension;
+        $target_file = $target_dir . $new_filename;
+        $allowed_types = array("jpg", "png", "jpeg", "gif", "webp");
+        if (in_array(strtolower($file_extension), $allowed_types)) {
+            if (move_uploaded_file($_FILES["slider_image"]["tmp_name"], $target_file)) {
+                $db_path = "assets/img/banners/" . $new_filename;
+                $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
+                $msg = "New Banner Uploaded!";
+                $msg_type = "success";
+            } else { $msg = "Failed to move file."; $msg_type = "error"; }
+        } else { $msg = "Invalid file type."; $msg_type = "error"; }
+    }
+}
+
+// 3. HANDLE SLIDER DELETE
+if (isset($_GET['delete_slider'])) {
+    $slide_id = intval($_GET['delete_slider']);
+    $conn->query("DELETE FROM sliders WHERE id=$slide_id");
+    header("Location: settings.php");
+    exit();
+}
+
+// 4. FETCH DATA
+$settings = $conn->query("SELECT * FROM settings WHERE id=1")->fetch_assoc();
+$sliders = $conn->query("SELECT * FROM sliders ORDER BY id DESC");
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings | Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background-color: #F1F5F9; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-slate-800">
+
+    <?php include '../includes/sidebar_admin.php'; ?>
+
+    <main class="lg:ml-64 p-4 lg:p-8 min-h-screen transition-all duration-300">
+        
+        <?php include '../includes/header.php'; ?>
+
+        <div class="max-w-5xl mx-auto">
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-2">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fas fa-cogs text-gray-600"></i> System Configuration
+                    </h1>
+                    <p class="text-sm text-gray-500">Global platform settings and administrative tools.</p>
+                </div>
+            </div>
+
+            <?php if($msg): ?>
+                <div class="<?php echo $msg_type=='success' ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700'; ?> border-l-4 p-4 rounded-lg mb-6 flex items-center shadow-sm text-sm font-medium">
+                    <i class="fas <?php echo $msg_type=='success' ? 'fa-check-circle' : 'fa-exclamation-circle'; ?> mr-2 text-lg"></i> <?php echo $msg; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+                <div class="space-y-6">
+                    <form method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="update_general" value="1">
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                                <h3 class="font-bold text-gray-800 text-sm uppercase tracking-wide">General Settings</h3>
+                            </div>
+                            <div class="p-6 space-y-4">
+                                
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Website Name / Frontend Name</label>
+                                    <input type="text" name="site_name" value="<?php echo htmlspecialchars($settings['site_name'] ?? ''); ?>" 
+                                        class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-indigo-500 text-gray-800 font-bold transition shadow-sm">
+                                    <p class="text-[10px] text-gray-400 mt-1">Frontend homepage, player pages and website title will use this name.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Admin Panel Name</label>
+                                    <input type="text" name="admin_panel_name" value="<?php echo htmlspecialchars($settings['admin_panel_name'] ?? ($settings['site_name'] ?? '')); ?>" 
+                                        class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-indigo-500 text-gray-800 font-bold transition shadow-sm">
+                                    <p class="text-[10px] text-gray-400 mt-1">Admin sidebar/header branding will use this name.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Website / Admin Logo</label>
+                                    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                        <?php if(!empty($settings['app_logo'])): ?>
+                                            <img src="../<?php echo htmlspecialchars($settings['app_logo']); ?>?v=<?php echo time(); ?>" class="h-12 w-12 object-contain rounded bg-white border" alt="Logo">
+                                        <?php else: ?>
+                                            <div class="h-12 w-12 rounded bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-image"></i></div>
+                                        <?php endif; ?>
+                                        <input type="file" name="app_logo" accept="image/*,.svg" class="text-xs w-full border border-gray-300 rounded p-2 bg-white">
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-1">Upload once and it will show in Admin branding and frontend app/logo areas.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Scrolling Marquee Text</label>
+                                    <textarea name="marquee_text" rows="3" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-indigo-500 text-gray-700 transition shadow-sm"><?php echo htmlspecialchars($settings['marquee_text']); ?></textarea>
+                                </div>
+
+                                <div class="pt-4 border-t border-gray-100 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100 mt-2">
+                                    <h4 class="text-xs font-bold text-yellow-700 uppercase mb-3 flex items-center gap-2">
+                                        <i class="fas fa-bullhorn"></i> Popup Announcement
+                                    </h4>
+                                    
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between bg-white p-2 rounded border border-gray-200">
+                                            <span class="text-sm font-medium text-gray-700">Enable Popup</span>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" name="popup_enabled" value="1" class="sr-only peer" <?php echo $settings['popup_enabled'] == 1 ? 'checked' : ''; ?>>
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                            </label>
+                                        </div>
+
+                                        <input type="text" name="popup_title" value="<?php echo htmlspecialchars($settings['popup_title'] ?? ''); ?>" placeholder="Popup Title" class="w-full border border-gray-300 rounded p-2 text-sm">
+                                        <textarea name="popup_desc" rows="2" placeholder="Popup Description" class="w-full border border-gray-300 rounded p-2 text-sm"><?php echo htmlspecialchars($settings['popup_desc'] ?? ''); ?></textarea>
+                                        <input type="text" name="popup_button_text" value="<?php echo htmlspecialchars($settings['popup_button_text'] ?? ''); ?>" placeholder="Button Text (Optional, e.g. Join Now)" class="w-full border border-gray-300 rounded p-2 text-sm">
+                                        <input type="text" name="popup_button_link" value="<?php echo htmlspecialchars($settings['popup_button_link'] ?? ''); ?>" placeholder="Button Link (Optional, e.g. deposit.php)" class="w-full border border-gray-300 rounded p-2 text-sm">
+                                        
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Popup Image</label>
+                                            <div class="flex items-center gap-3">
+                                                <input type="file" name="popup_image" accept="image/*" class="text-xs w-full border border-gray-300 rounded p-1">
+                                                <?php if(!empty($settings['popup_image'])): ?>
+                                                    <img src="../<?php echo htmlspecialchars($settings['popup_image']); ?>?v=<?php echo time(); ?>" class="h-8 w-8 object-cover rounded border">
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-t border-gray-100">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-3">Social Media Links</label>
+                                    
+                                    <div class="space-y-3">
+                                        <div class="relative">
+                                            <i class="fab fa-telegram text-blue-500 absolute left-3 top-3.5 text-lg"></i>
+                                            <input type="text" name="telegram_link" value="<?php echo htmlspecialchars($settings['telegram_link'] ?? ''); ?>" placeholder="Telegram Link"
+                                                class="w-full pl-10 border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-indigo-500">
+                                        </div>
+                                        
+                                        <div class="relative">
+                                            <i class="fab fa-facebook text-blue-700 absolute left-3 top-3.5 text-lg"></i>
+                                            <input type="text" name="facebook_link" value="<?php echo htmlspecialchars($settings['facebook_link'] ?? ''); ?>" placeholder="Facebook Link"
+                                                class="w-full pl-10 border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-indigo-500">
+                                        </div>
+
+                                        <div class="relative">
+                                            <i class="fab fa-whatsapp text-green-600 absolute left-3 top-3.5 text-lg"></i>
+                                            <input type="text" name="whatsapp_link" value="<?php echo htmlspecialchars($settings['whatsapp_link'] ?? ''); ?>" placeholder="WhatsApp Link or Number (e.g. https://wa.me/8801...)"
+                                                class="w-full pl-10 border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-indigo-500">
+                                            <p class="text-[10px] text-gray-400 mt-1 ml-1">Dashboard floating WhatsApp support icon link. You can use full link or phone number.</p>
+                                        </div>
+
+                                        <div class="relative">
+                                            <i class="fab fa-instagram text-pink-600 absolute left-3 top-3.5 text-lg"></i>
+                                            <input type="text" name="instagram_link" value="<?php echo htmlspecialchars($settings['instagram_link'] ?? ''); ?>" placeholder="Instagram Link"
+                                                class="w-full pl-10 border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-indigo-500">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-4 border-t border-gray-100">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-4">
+                                        Auto-Lock Withdrawals Threshold
+                                    </label>
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-full relative">
+                                            <input type="range" name="risk_auto_lock_percent" min="10" max="100" 
+                                                value="<?php echo $settings['risk_auto_lock_percent']; ?>" 
+                                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                                oninput="document.getElementById('riskVal').innerText = this.value + '%'">
+                                        </div>
+                                        <div class="bg-indigo-50 border border-indigo-100 rounded-lg w-20 h-12 flex items-center justify-center shrink-0">
+                                            <span id="riskVal" class="text-xl font-bold text-indigo-700">
+                                                <?php echo $settings['risk_auto_lock_percent']; ?>%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="text-right pt-2">
+                                    <button type="submit" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                                        <i class="fas fa-save"></i> Save Configuration
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-800 text-sm uppercase tracking-wide">Banner Sliders</h3>
+                            <span class="bg-blue-100 text-blue-700 text-[10px] px-2 py-1 rounded-full font-bold uppercase">App & Web</span>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="space-y-4 mb-6 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                                <?php if($sliders && $sliders->num_rows > 0): ?>
+                                    <?php while($row = $sliders->fetch_assoc()): ?>
+                                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 group hover:border-indigo-200 transition">
+                                        <div class="flex items-center gap-3">
+                                            <img src="../<?php echo $row['image_path']; ?>" class="w-24 h-12 object-cover rounded border border-gray-200 shadow-sm" alt="Banner">
+                                            <div class="flex-1 overflow-hidden">
+                                                <p class="text-xs text-gray-500 truncate w-32"><?php echo basename($row['image_path']); ?></p>
+                                                <span class="text-[10px] bg-green-100 text-green-600 px-1.5 rounded font-bold">Active</span>
+                                            </div>
+                                        </div>
+                                        <a href="?delete_slider=<?php echo $row['id']; ?>" onclick="return confirm('Delete this banner?')" class="text-red-400 hover:text-red-600 p-2 bg-white rounded-full shadow-sm border border-gray-100 hover:bg-red-50 transition">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                    <?php endwhile; ?>
+                                <?php else: ?>
+                                    <div class="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                                        <i class="far fa-images text-gray-300 text-3xl mb-2"></i>
+                                        <p class="text-gray-400 text-xs">No banners uploaded yet.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                                <h4 class="text-xs font-bold text-blue-800 uppercase mb-3">Upload New Banner</h4>
+                                <form method="POST" enctype="multipart/form-data" class="flex flex-col gap-3">
+                                    <input type="hidden" name="upload_slider" value="1">
+                                    <div class="relative group">
+                                        <input type="file" name="slider_image" required accept="image/*" class="w-full text-sm text-gray-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-white file:text-blue-700 hover:file:bg-blue-100 transition cursor-pointer border border-blue-200 rounded-lg bg-white p-1 shadow-sm">
+                                    </div>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <p class="text-[10px] text-gray-500">Size: 1200x400px (JPG, PNG)</p>
+                                        <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-md flex items-center gap-2">
+                                            <i class="fas fa-cloud-upload-alt"></i> Upload
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

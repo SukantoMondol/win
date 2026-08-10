@@ -1,0 +1,10 @@
+[22-Jun-2026 12:03:10 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'session_token' in 'SET' in /home/jbnet/public_html/webcornerbd/user_profile.php:29
+Stack trace:
+#0 /home/jbnet/public_html/webcornerbd/user_profile.php(29): mysqli->query('UPDATE users SE...')
+#1 {main}
+  thrown in /home/jbnet/public_html/webcornerbd/user_profile.php on line 29
+[22-Jun-2026 12:03:12 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'session_token' in 'SET' in /home/jbnet/public_html/webcornerbd/user_profile.php:29
+Stack trace:
+#0 /home/jbnet/public_html/webcornerbd/user_profile.php(29): mysqli->query('UPDATE users SE...')
+#1 {main}
+  thrown in /home/jbnet/public_html/webcornerbd/user_profile.php on line 29

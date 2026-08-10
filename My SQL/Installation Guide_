@@ -1,0 +1,16 @@
+Installation Guide : 
+
+PHP Version : 8.1 
+
+1) Upload Script and Unzip & "File" Folder Open and Move All Public_html
+2) Goto PHPMyAdmin -> Solar dchipower.sql Upload
+3) Goto .evn File & Edit &  Your URL Link & Database User Name and Database Name and Password  All Enter
+
+Done :)
+
+Developer By: WEB CORNER BD
+Contact: https://t.me/webcornerbd
+
+Admin URL : - yourdomain/webcornerbd
+Email : admin@gmail.com
+Password : 123456

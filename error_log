@@ -1,0 +1,10 @@
+[29-Jun-2026 11:52:03 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Too many connections in /home/jbnet/public_html/includes/db.php:9
+Stack trace:
+#0 /home/jbnet/public_html/includes/db.php(9): mysqli->__construct('localhost', 'jbnet_selimxpro', Object(SensitiveParameterValue), 'jbnet_selimxpro')
+#1 /home/jbnet/public_html/index.php(14): require('/home/jbnet/pub...')
+#2 {main}
+  thrown in /home/jbnet/public_html/includes/db.php on line 9
+[03-Jul-2026 11:39:37 UTC] PHP Warning:  Undefined array key "HTTP_USER_AGENT" in /home/courseba/public_html/index.php on line 71
+[03-Jul-2026 11:39:37 UTC] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in /home/courseba/public_html/index.php on line 72
+[03-Jul-2026 11:53:49 UTC] PHP Warning:  Undefined array key "HTTP_USER_AGENT" in /home/courseba/public_html/index.php on line 71
+[03-Jul-2026 11:53:49 UTC] PHP Deprecated:  strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated in /home/courseba/public_html/index.php on line 72

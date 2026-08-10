@@ -1,0 +1,162 @@
+[19-Jun-2026 00:01:53 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate column name 'subtitle' in /home/ajwincom/public_html/player/promotions.php:7
+Stack trace:
+#0 /home/ajwincom/public_html/player/promotions.php(7): mysqli_query()
+#1 {main}
+  thrown in /home/ajwincom/public_html/player/promotions.php on line 7
+[19-Jun-2026 00:01:55 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Duplicate column name 'subtitle' in /home/ajwincom/public_html/player/promotions.php:7
+Stack trace:
+#0 /home/ajwincom/public_html/player/promotions.php(7): mysqli_query()
+#1 {main}
+  thrown in /home/ajwincom/public_html/player/promotions.php on line 7
+[20-Jun-2026 06:54:59 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 06:54:59 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 06:54:59 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 06:54:59 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 06:54:59 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 06:54:59 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 06:54:59 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 06:54:59 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 06:55:16 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[20-Jun-2026 06:55:18 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[20-Jun-2026 06:55:20 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[20-Jun-2026 06:56:46 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 06:56:46 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 06:56:46 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 06:56:46 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 06:56:46 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 06:56:46 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 06:56:46 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 06:56:46 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 11:06:01 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 11:06:01 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 11:06:01 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 11:06:01 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 11:06:01 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 11:06:01 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 11:06:01 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 11:06:01 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 11:06:30 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 11:06:30 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[20-Jun-2026 11:06:30 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 11:06:30 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[20-Jun-2026 11:06:30 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 11:06:30 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[20-Jun-2026 11:06:30 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[20-Jun-2026 11:06:30 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:42 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:42 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:42 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:42 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:42 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:42 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:42 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:42 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:44 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:44 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:44 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:44 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:44 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:44 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:44 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:44 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:45 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:45 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[24-Jun-2026 20:29:45 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:45 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[24-Jun-2026 20:29:45 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:45 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[24-Jun-2026 20:29:45 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:45 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[24-Jun-2026 20:29:51 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[24-Jun-2026 20:29:52 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[24-Jun-2026 20:29:54 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[24-Jun-2026 20:29:57 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[24-Jun-2026 20:30:00 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Cannot add or update a child row: a foreign key constraint fails (`jbnet_selimxpro`.`player_profiles`, CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE) in /home/jbnet/public_html/player/personal_info.php:23
+Stack trace:
+#0 /home/jbnet/public_html/player/personal_info.php(23): mysqli_stmt->execute()
+#1 {main}
+  thrown in /home/jbnet/public_html/player/personal_info.php on line 23
+[30-Jun-2026 09:53:19 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:19 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:19 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:19 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:19 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:19 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:19 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:19 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:22 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:22 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:22 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:22 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:22 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:22 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:22 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:22 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:23 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:23 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:23 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:23 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:34 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:34 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:53:34 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:34 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:53:34 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:34 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:53:34 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:53:34 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:23 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:23 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:23 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:23 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:23 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:31 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:31 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:31 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:31 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:31 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:31 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:31 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:31 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:33 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:33 UTC] PHP Deprecated:  urlencode(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 183
+[30-Jun-2026 09:56:33 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:33 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 190
+[30-Jun-2026 09:56:33 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:33 UTC] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /home/jbnet/public_html/player/account.php on line 193
+[30-Jun-2026 09:56:33 UTC] PHP Warning:  Trying to access array offset on value of type null in /home/jbnet/public_html/player/account.php on line 200
+[30-Jun-2026 09:56:33 UTC] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in /home/jbnet/public_html/player/account.php on line 200
