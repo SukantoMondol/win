@@ -30,38 +30,8 @@ $msg = "";
 $msg_type = "";
 
 // 1. HANDLE GENERAL SETTINGS UPDATE
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
-    $site_name = sanitize($conn, $_POST['site_name'] ?? '');
-    $admin_panel_name = sanitize($conn, $_POST['admin_panel_name'] ?? '');
-    if ($admin_panel_name === '') { $admin_panel_name = $site_name; }
-
-    $lock_percent = intval($_POST['risk_auto_lock_percent'] ?? 80);
-    $marquee_text = sanitize($conn, $_POST['marquee_text'] ?? '');
-    
-    // Social Links
-    $tg_link = sanitize($conn, $_POST['telegram_link'] ?? '#');
-    $fb_link = sanitize($conn, $_POST['facebook_link'] ?? '#');
-    $ig_link = sanitize($conn, $_POST['instagram_link'] ?? '#');
-    $wa_link = sanitize($conn, $_POST['whatsapp_link'] ?? '#');
-    
-    // Popup Settings
-    $popup_enabled = isset($_POST['popup_enabled']) ? 1 : 0;
-    $popup_title = sanitize($conn, $_POST['popup_title'] ?? '');
-    $popup_desc = sanitize($conn, $_POST['popup_desc'] ?? '');
-    $popup_button_text = sanitize($conn, $_POST['popup_button_text'] ?? '');
-    $popup_button_link = sanitize($conn, $_POST['popup_button_link'] ?? '');
-    
-    // Fetch existing images first
-    $popup_image_path = '';
-    $app_logo_path = '';
-    $current_q = $conn->query("SELECT popup_image, app_logo FROM settings WHERE id=1");
-    if ($current_q && $current_q->num_rows > 0) {
-        $existing_row = $current_q->fetch_assoc();
-        $popup_image_path = $existing_row['popup_image'] ?? '';
-        $app_logo_path = $existing_row['app_logo'] ?? '';
-    }
-
-    // Helper for robust file upload
+// Global helper for robust file upload
+if (!function_exists('wcb_save_uploaded_file')) {
     function wcb_save_uploaded_file($file, $target_dir, $prefix = 'img_') {
         if (!isset($file) || !is_array($file) || $file['error'] != 0 || empty($file['tmp_name'])) {
             return false;
@@ -97,6 +67,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
             return $new_name;
         }
         return false;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
+    $site_name = sanitize($conn, $_POST['site_name'] ?? '');
+    $admin_panel_name = sanitize($conn, $_POST['admin_panel_name'] ?? '');
+    if ($admin_panel_name === '') { $admin_panel_name = $site_name; }
+
+    $lock_percent = intval($_POST['risk_auto_lock_percent'] ?? 80);
+    $marquee_text = sanitize($conn, $_POST['marquee_text'] ?? '');
+    
+    // Social Links
+    $tg_link = sanitize($conn, $_POST['telegram_link'] ?? '#');
+    $fb_link = sanitize($conn, $_POST['facebook_link'] ?? '#');
+    $ig_link = sanitize($conn, $_POST['instagram_link'] ?? '#');
+    $wa_link = sanitize($conn, $_POST['whatsapp_link'] ?? '#');
+    
+    // Popup Settings
+    $popup_enabled = isset($_POST['popup_enabled']) ? 1 : 0;
+    $popup_title = sanitize($conn, $_POST['popup_title'] ?? '');
+    $popup_desc = sanitize($conn, $_POST['popup_desc'] ?? '');
+    $popup_button_text = sanitize($conn, $_POST['popup_button_text'] ?? '');
+    $popup_button_link = sanitize($conn, $_POST['popup_button_link'] ?? '');
+    
+    // Fetch existing images first
+    $popup_image_path = '';
+    $app_logo_path = '';
+    $current_q = $conn->query("SELECT popup_image, app_logo FROM settings WHERE id=1");
+    if ($current_q && $current_q->num_rows > 0) {
+        $existing_row = $current_q->fetch_assoc();
+        $popup_image_path = $existing_row['popup_image'] ?? '';
+        $app_logo_path = $existing_row['app_logo'] ?? '';
     }
 
     // Handle global Website/Admin Logo Upload
