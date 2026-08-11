@@ -97,7 +97,7 @@ if ($apiEndpoint === '') { $apiEndpoint = 'https://game.gambllyapi.com/productio
                             <li><strong>Secret Key (Suffix):</strong> Your Gamblly API Suffix (e.g. <code>b2cb3</code>)</li>
                             <li><strong>API Prefix / Agent Code:</strong> Your Gamblly API Prefix/Agent code (e.g. <code>b2cb3</code>)</li>
                             <li><strong>API Endpoint URL:</strong> <code>https://game.gambllyapi.com/production/v1/gameLaunch.php</code></li>
-                            <li><strong>Callback URL:</strong> <code>https://bajixwin.com/api/game/callback</code></li>
+                            <li><strong>Callback URL:</strong> <code>https://bajixwin.com/api/game/callback.php</code> (Make sure to include <code>.php</code> at the end in Gamblly panel)</li>
                         </ul>
                     </div>
 

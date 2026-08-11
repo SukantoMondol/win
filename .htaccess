@@ -1,2 +1,8 @@
-# Cleaned for local XAMPP environment
-# Removed cPanel ea-php handler that caused PHP files to download instead of execute
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Route /api/game/callback (without .php) to /api/game/callback.php
+RewriteRule ^api/game/callback/?$ api/game/callback.php [L,QSA]
+RewriteRule ^api/game/debug_callback/?$ api/game/debug_callback.php [L,QSA]
+RewriteRule ^api/game/view_log/?$ api/game/view_log.php [L,QSA]
+</IfModule>

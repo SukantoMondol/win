@@ -13,7 +13,7 @@ if (!function_exists('gamblly_api_default_config')) {
             'withdraw_url' => 'https://game.gambllyapi.com/production/v1/getWithdraw.php',
             'balance_url' => 'https://game.gambllyapi.com/production/v1/getBalance.php',
             'callback_pull_url' => 'https://game.gambllyapi.com/production/v1/callback.php',
-            'callback_url' => 'https://jb66.net/api/game/callback',
+            'callback_url' => 'https://bajixwin.com/api/game/callback.php',
             'api_key' => 'ee761aea015CodeHub94fbe22b19aa61',
             'member_prefix' => '',
             'member_suffix' => '',
