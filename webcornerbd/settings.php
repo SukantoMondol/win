@@ -36,10 +36,14 @@ if (!function_exists('wcb_save_uploaded_file')) {
         if (!isset($file) || !is_array($file) || $file['error'] != 0 || empty($file['tmp_name'])) {
             return false;
         }
-        if (!is_dir($target_dir)) {
-            @mkdir($target_dir, 0777, true);
+
+        $clean_rel = ltrim(str_replace('../', '', $target_dir), '/');
+        $abs_dir = dirname(__DIR__) . '/' . $clean_rel;
+
+        if (!is_dir($abs_dir)) {
+            @mkdir($abs_dir, 0777, true);
         }
-        @chmod($target_dir, 0777);
+        @chmod($abs_dir, 0777);
 
         $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
         $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
@@ -48,7 +52,7 @@ if (!function_exists('wcb_save_uploaded_file')) {
         }
 
         $new_name = $prefix . time() . "_" . rand(100, 999) . "." . $ext;
-        $target_file = rtrim($target_dir, '/') . '/' . $new_name;
+        $target_file = rtrim($abs_dir, '/') . '/' . $new_name;
 
         $tmp = $file["tmp_name"];
         $saved = @move_uploaded_file($tmp, $target_file);
