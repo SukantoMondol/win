@@ -503,9 +503,24 @@ if ((isset($data['bet_amount']) || isset($data['betAmount']) || isset($data['Bet
 }
 
 if ($type === 'getBalance') {
+    if ($playerId <= 0 && $rawPlayerId !== '') {
+        $cleanUser = trim((string)$rawPlayerId);
+        $stmtU = $conn->prepare("SELECT id, balance FROM users WHERE username=? OR email=? LIMIT 1");
+        if ($stmtU) {
+            $stmtU->bind_param('ss', $cleanUser, $cleanUser);
+            $stmtU->execute();
+            $resU = $stmtU->get_result();
+            if ($resU && $resU->num_rows > 0) {
+                $rowU = $resU->fetch_assoc();
+                $playerId = (int)$rowU['id'];
+            }
+            $stmtU->close();
+        }
+    }
+
     if ($playerId <= 0) {
-        oxen_callback_log('get_balance_invalid_player', array('raw_player_id' => $rawPlayerId, 'data' => $data));
-        game_api_json_response(array('status' => 400, 'msg' => 'Invalid PlayerId'));
+        oxen_callback_log('get_balance_ping', array('raw_player_id' => $rawPlayerId, 'data' => $data));
+        oxen_wallet_response(200, 'Success', 0.00, array('action' => 'getBalance', 'ping' => true));
     }
     $stmt = $conn->prepare("SELECT balance FROM users WHERE id=? LIMIT 1");
     if (!$stmt) {
@@ -518,7 +533,7 @@ if ($type === 'getBalance') {
     if (!$res || $res->num_rows === 0) {
         $stmt->close();
         oxen_callback_log('get_balance_user_not_found', array('player_id' => $playerId, 'raw_player_id' => $rawPlayerId));
-        game_api_json_response(array('status' => 400, 'msg' => 'User not found'));
+        oxen_wallet_response(200, 'Success', 0.00, array('action' => 'getBalance'));
     }
     $balance = (float)$res->fetch_assoc()['balance'];
     $stmt->close();
