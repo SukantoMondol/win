@@ -80,10 +80,10 @@ $agentCode = (string)($config['agent_code'] ?? '');
                     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 space-y-2">
                         <p class="font-bold"><i class="fas fa-info-circle"></i> Gamblly API Settings Guide:</p>
                         <ul class="list-disc list-inside space-y-1">
-                            <li><strong>API Key / Validation Token:</strong> Your Gamblly API Key (e.g. <code>07d92b12ebaCodeHub944d2237b6af09</code>)</li>
-                            <li><strong>Secret Key (Suffix):</strong> Your Gamblly API Suffix (e.g. <code>7605d</code>)</li>
-                            <li><strong>API Prefix / Agent Code:</strong> Your Gamblly API Prefix/Agent code (e.g. <code>hfb20f</code>)</li>
-                            <li><strong>Callback URL:</strong> <code>https://jb66.net/api/game/callback</code></li>
+                            <li><strong>API Key / Validation Token:</strong> Your Gamblly API Key (e.g. <code>ee761aea015CodeHub94fbe22b19aa61</code>)</li>
+                            <li><strong>Secret Key (Suffix):</strong> Your Gamblly API Suffix (e.g. <code>b2cb3</code>)</li>
+                            <li><strong>API Prefix / Agent Code:</strong> Your Gamblly API Prefix/Agent code (e.g. <code>b2cb3</code>)</li>
+                            <li><strong>Callback URL:</strong> <code>https://bajixwin.com/api/game/callback</code></li>
                         </ul>
                     </div>
 

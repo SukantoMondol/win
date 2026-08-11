@@ -33,22 +33,23 @@ if (!function_exists('gamblly_auto_setup_run')) {
             $currentLaunchUrl = trim((string)$resLaunchUrl->fetch_assoc()['setting_value']);
         }
 
-        $expectedKey = '07d92b12ebaCodeHub944d2237b6af09';
-        $expectedEndpoint = 'https://game.gambllyapi.com/production/v1/gameLaunch.php';
-
-        if ($currentProvider !== 'GAMBLLY' || $currentKey !== $expectedKey || $currentEndpoint !== $expectedEndpoint || ($currentLaunchUrl !== '' && $currentLaunchUrl !== $expectedEndpoint)) {
+        // Only run setup if game_api_provider is not configured in DB at all
+        if ($currentProvider === '' && $currentKey === '') {
             require_once __DIR__ . '/game_api_helper.php';
             
             // Ensure the schema is ready
             game_api_ensure_schema($conn, false);
 
-            // Update settings in database
+            $defaultKey = 'ee761aea015CodeHub94fbe22b19aa61';
+            $defaultEndpoint = 'https://game.gambllyapi.com/production/v1/gameLaunch.php';
+
+            // Seed default settings only if empty
             game_api_set_setting($conn, 'game_api_provider', 'GAMBLLY');
-            game_api_set_setting($conn, 'api_token', $expectedKey);
-            game_api_set_setting($conn, 'secret_key', '7605d'); // Suffix
-            game_api_set_setting($conn, 'agent_code', 'hfb20f'); // Prefix
-            game_api_set_setting($conn, 'api_endpoint', $expectedEndpoint);
-            game_api_set_setting($conn, 'gamblly_launch_url', $expectedEndpoint);
+            game_api_set_setting($conn, 'api_token', $defaultKey);
+            game_api_set_setting($conn, 'secret_key', 'b2cb3'); // Suffix
+            game_api_set_setting($conn, 'agent_code', 'b2cb3'); // Prefix
+            game_api_set_setting($conn, 'api_endpoint', $defaultEndpoint);
+            game_api_set_setting($conn, 'gamblly_launch_url', $defaultEndpoint);
 
             // Force mappings to seed so all games populate
             game_api_seed_mappings($conn);

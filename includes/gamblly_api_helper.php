@@ -14,7 +14,7 @@ if (!function_exists('gamblly_api_default_config')) {
             'balance_url' => 'https://game.gambllyapi.com/production/v1/getBalance.php',
             'callback_pull_url' => 'https://game.gambllyapi.com/production/v1/callback.php',
             'callback_url' => 'https://jb66.net/api/game/callback',
-            'api_key' => '07d92b12ebaCodeHub944d2237b6af09',
+            'api_key' => 'ee761aea015CodeHub94fbe22b19aa61',
             'member_prefix' => '',
             'member_suffix' => '',
             'currency' => 'BDT',
