@@ -13,9 +13,8 @@ if (!function_exists('gamblly_api_default_config')) {
             'withdraw_url' => 'https://game.gambllyapi.com/production/v1/getWithdraw.php',
             'balance_url' => 'https://game.gambllyapi.com/production/v1/getBalance.php',
             'callback_pull_url' => 'https://game.gambllyapi.com/production/v1/callback.php',
-            'callback_url' => 'https://bajixwin.com/api/game/callback',
+            'callback_url' => 'https://jb66.net/api/game/callback',
             'api_key' => 'ee761aea015CodeHub94fbe22b19aa61',
-            'agent_code' => 'b2cb3',
             'member_prefix' => '',
             'member_suffix' => '',
             'currency' => 'BDT',
@@ -46,42 +45,30 @@ if (!function_exists('gamblly_api_get_config')) {
         if (!is_array($settings)) { $settings = array(); }
         $defaults = gamblly_api_default_config();
 
-        // FORCE correct API URL - gambllyapi.com (no hyphen). Any saved URL with 'gamblly-api.com' is old/wrong.
         $endpoint = gamblly_api_get_setting_value($settings, array('gamblly_launch_url', 'api_endpoint'), $defaults['launch_url']);
-        // Always force correct domain - reject old gamblly-api.com (with hyphen)
-        if ($endpoint === '' || stripos($endpoint, 'gambllyapi.com') === false) {
-            $endpoint = $defaults['launch_url']; // https://game.gambllyapi.com/...
+        if ($endpoint === '' || (stripos($endpoint, 'gambllyapi.com') === false && stripos($endpoint, 'gamblly-api.com') === false)) {
+            $endpoint = $defaults['launch_url'];
         }
 
         $apiKey = gamblly_api_get_setting_value($settings, array('gamblly_api_key', 'api_token'), $defaults['api_key']);
-        $agentCode = gamblly_api_get_setting_value($settings, array('gamblly_agent_code', 'agent_code', 'api_suffix'), $defaults['agent_code']);
-        $prefix = gamblly_api_get_setting_value($settings, array('gamblly_member_prefix', 'api_prefix'), $defaults['member_prefix']);
-        $suffix = gamblly_api_get_setting_value($settings, array('gamblly_member_suffix'), $defaults['member_suffix']);
+        $prefix = gamblly_api_get_setting_value($settings, array('gamblly_member_prefix', 'api_prefix', 'agent_code'), $defaults['member_prefix']);
+        $suffix = gamblly_api_get_setting_value($settings, array('gamblly_member_suffix', 'api_suffix', 'secret_key'), $defaults['member_suffix']);
 
-        $agentCode = preg_replace('/[^A-Za-z0-9_\-]/', '', $agentCode);
         $prefix = preg_replace('/[^A-Za-z0-9_\-]/', '', $prefix);
         $suffix = preg_replace('/[^A-Za-z0-9_\-]/', '', $suffix);
 
-        // Callback URL must always point to bajixwin.com
-        $callbackUrl = gamblly_api_get_setting_value($settings, 'gamblly_callback_url', $defaults['callback_url']);
-        if (stripos($callbackUrl, 'bajixwin.com') === false && stripos($callbackUrl, 'jb66.net') === false) {
-            $callbackUrl = $defaults['callback_url'];
-        }
-
         return array(
-            'launch_url'       => $endpoint,
-            'withdraw_url'     => gamblly_api_get_setting_value($settings, 'gamblly_withdraw_url', $defaults['withdraw_url']),
-            'balance_url'      => gamblly_api_get_setting_value($settings, 'gamblly_balance_url', $defaults['balance_url']),
-            'callback_pull_url'=> gamblly_api_get_setting_value($settings, 'gamblly_callback_api_url', $defaults['callback_pull_url']),
-            'callback_url'     => $callbackUrl,
-            'api_key'          => $apiKey,
-            'agent_code'       => $agentCode,
-            'secret_key'       => $agentCode, // alias for callback key verification
-            'member_prefix'    => $prefix,
-            'member_suffix'    => $suffix,
-            'currency'         => strtoupper(gamblly_api_get_setting_value($settings, 'currency_code', $defaults['currency'])),
-            'language'         => strtolower(gamblly_api_get_setting_value($settings, 'gamblly_language', $defaults['language'])),
-            'platform'         => gamblly_api_get_setting_value($settings, 'gamblly_platform', $defaults['platform']),
+            'launch_url' => $endpoint,
+            'withdraw_url' => gamblly_api_get_setting_value($settings, 'gamblly_withdraw_url', $defaults['withdraw_url']),
+            'balance_url' => gamblly_api_get_setting_value($settings, 'gamblly_balance_url', $defaults['balance_url']),
+            'callback_pull_url' => gamblly_api_get_setting_value($settings, 'gamblly_callback_api_url', $defaults['callback_pull_url']),
+            'callback_url' => gamblly_api_get_setting_value($settings, 'gamblly_callback_url', $defaults['callback_url']),
+            'api_key' => $apiKey,
+            'member_prefix' => $prefix,
+            'member_suffix' => $suffix,
+            'currency' => strtoupper(gamblly_api_get_setting_value($settings, 'currency_code', $defaults['currency'])),
+            'language' => strtolower(gamblly_api_get_setting_value($settings, 'gamblly_language', $defaults['language'])),
+            'platform' => gamblly_api_get_setting_value($settings, 'gamblly_platform', $defaults['platform']),
             'zero_local_on_launch' => gamblly_api_get_setting_value($settings, 'gamblly_zero_local_on_launch', $defaults['zero_local_on_launch'])
         );
     }
@@ -503,27 +490,6 @@ if (!function_exists('gamblly_api_response')) {
             http_response_code($httpCode);
             header('Content-Type: application/json; charset=utf-8');
         }
-        if (is_array($payload)) {
-            if (isset($payload['balance'])) {
-                $bal = round((float)$payload['balance'], 2);
-                $payload['balance'] = $bal;
-                $payload['user_balance'] = $bal;
-                $payload['current_balance'] = $bal;
-                $payload['available_balance'] = $bal;
-                $payload['member_balance'] = $bal;
-                $payload['wallet_balance'] = $bal;
-                $payload['amount'] = $bal;
-            }
-            if (!isset($payload['status'])) {
-                $payload['status'] = true;
-            }
-            if ($payload['status'] === true || $payload['status'] === 200 || $payload['status'] === '200') {
-                $payload['code'] = 0;
-                $payload['errorCode'] = 0;
-                $payload['status_code'] = 0;
-                $payload['success'] = true;
-            }
-        }
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -537,67 +503,40 @@ if (!function_exists('gamblly_api_handle_callback')) {
 
         list($data, $raw) = gamblly_api_read_callback_payload();
         $config = gamblly_api_get_config($conn);
-        $receivedApiKey = trim((string)gamblly_api_pick($data, array('api_key', 'agency_uid', 'APIKey', 'key', 'token', 'secret_key'), ''));
-        if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_API_KEY'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_API_KEY']); }
-        if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_AGENCY_UID'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_AGENCY_UID']); }
-        if ($receivedApiKey === '' && isset($_SERVER['HTTP_AUTHORIZATION'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_AUTHORIZATION']); }
-
-        $expectedKey = trim((string)$config['api_key']);
-        $expectedSecret = trim((string)($config['secret_key'] ?? ''));
-        $expectedAgent = trim((string)($config['agent_code'] ?? ''));
-
-        if ($receivedApiKey !== '' && $expectedKey !== '') {
-            $matched = (hash_equals($expectedKey, $receivedApiKey) || 
-                        ($expectedSecret !== '' && hash_equals($expectedSecret, $receivedApiKey)) || 
-                        ($expectedAgent !== '' && hash_equals($expectedAgent, $receivedApiKey)));
-            if (!$matched) {
-                game_api_debug_log('gamblly_callback_key_mismatch', array('received' => $receivedApiKey, 'expected' => $expectedKey));
-            }
+        if (!is_array($data) || empty($data)) {
+            gamblly_api_response(array('status' => true, 'balance' => 0.00, 'message' => 'Empty request'));
         }
 
-        $playerRaw = gamblly_api_pick($data, array('player_uid', 'member_account', 'member', 'username', 'user_id', 'uid', 'player_id', 'account', 'player'), '');
+        $receivedApiKey = trim((string)gamblly_api_pick($data, array('api_key', 'agency_uid', 'APIKey', 'key'), ''));
+        if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_API_KEY'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_API_KEY']); }
+        if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_AGENCY_UID'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_AGENCY_UID']); }
+        if (trim((string)$config['api_key']) !== '' && !hash_equals((string)$config['api_key'], $receivedApiKey)) {
+            gamblly_api_response(array('status' => false, 'message' => 'Invalid API key'), 403);
+        }
+
+        $playerRaw = gamblly_api_pick($data, array('player_uid', 'member_account', 'member', 'username', 'user_id', 'uid', 'player_id'), '');
+        $userId = gamblly_api_extract_player_id($playerRaw, $config);
+        if ($userId <= 0) { gamblly_api_response(array('status' => false, 'message' => 'Invalid player'), 400); }
+
         $action = strtolower(trim((string)gamblly_api_pick($data, array('action', 'type', 'method', 'transaction_type', 'bet_type'), '')));
         $roundId = trim((string)gamblly_api_pick($data, array('round_id', 'roundId', 'game_round', 'gameRound', 'game_round_id'), ''));
         $baseTxnId = trim((string)gamblly_api_pick($data, array('txn_id', 'transaction_id', 'serial_number', 'id', 'order_id', 'transfer_id'), ''));
         if ($baseTxnId === '') { $baseTxnId = sha1($raw !== '' ? $raw : gamblly_api_json_encode($data)); }
         if ($roundId === '') { $roundId = $baseTxnId; }
 
-        $userId = gamblly_api_extract_player_id($playerRaw, $config);
-        $user = null;
-
+        $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE id=? LIMIT 1 FOR UPDATE");
+        if (!$stmt) { gamblly_api_response(array('status' => false, 'message' => 'Database error'), 500); }
         @$conn->begin_transaction();
-
-        if ($userId > 0) {
-            $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE id=? LIMIT 1 FOR UPDATE");
-            if ($stmt) {
-                $stmt->bind_param('i', $userId);
-                $stmt->execute();
-                $res = $stmt->get_result();
-                if ($res && $res->num_rows > 0) { $user = $res->fetch_assoc(); }
-                $stmt->close();
-            }
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if (!$res || $res->num_rows === 0) {
+            $stmt->close();
+            @$conn->rollback();
+            gamblly_api_response(array('status' => false, 'message' => 'Player not found'), 404);
         }
-
-        if (!$user && $playerRaw !== '') {
-            $cleanUser = trim((string)$playerRaw);
-            $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE username=? OR email=? LIMIT 1 FOR UPDATE");
-            if ($stmt) {
-                $stmt->bind_param('ss', $cleanUser, $cleanUser);
-                $stmt->execute();
-                $res = $stmt->get_result();
-                if ($res && $res->num_rows > 0) {
-                    $user = $res->fetch_assoc();
-                    $userId = (int)$user['id'];
-                }
-                $stmt->close();
-            }
-        }
-
-        if (!$user) {
-            @$conn->commit();
-            gamblly_api_response(array('status' => true, 'balance' => 0.00, 'message' => 'Healthcheck OK'));
-        }
-
+        $user = $res->fetch_assoc();
+        $stmt->close();
         $balanceBefore = round((float)$user['balance'], 6);
 
         // Special Case: action=deposit_required
