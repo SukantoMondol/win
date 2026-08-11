@@ -300,10 +300,7 @@ if (!function_exists('gamblly_api_launch_game')) {
         }
         $ok = ($launchUrl !== '' && ($status || (isset($result['success']) && $result['success'])));
 
-        if ($ok && !empty($config['zero_local_on_launch']) && (string)$config['zero_local_on_launch'] === '1') {
-            $stmt = @$conn->prepare("UPDATE users SET balance=0 WHERE id=? LIMIT 1");
-            if ($stmt) { $stmt->bind_param('i', $userId); $stmt->execute(); $stmt->close(); }
-        }
+        // Do not zero out local user balance on game launch
 
         $message = 'Game launch failed.';
         if (is_array($decoded)) {
