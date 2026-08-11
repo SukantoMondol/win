@@ -30,25 +30,44 @@ $msg = "";
 $msg_type = "";
 
 // 1. HANDLE GENERAL SETTINGS UPDATE
-// Global helper for robust file upload
+// Global helper for robust file upload with detailed status
 if (!function_exists('wcb_save_uploaded_file')) {
     function wcb_save_uploaded_file($file, $target_dir, $prefix = 'img_') {
-        if (!isset($file) || !is_array($file) || $file['error'] != 0 || empty($file['tmp_name'])) {
-            return false;
+        if (!isset($file) || !is_array($file)) {
+            return array('ok' => false, 'error' => 'No file payload received.');
+        }
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            $err_map = array(
+                1 => 'File exceeds maximum upload size (upload_max_filesize).',
+                2 => 'File exceeds MAX_FILE_SIZE directive.',
+                3 => 'File was only partially uploaded.',
+                4 => 'No file was selected.',
+                6 => 'Missing temporary folder on server.',
+                7 => 'Failed to write file to server disk.',
+                8 => 'A PHP extension stopped the file upload.'
+            );
+            $err_msg = $err_map[$file['error']] ?? ('PHP upload error code: ' . $file['error']);
+            return array('ok' => false, 'error' => $err_msg);
+        }
+
+        if (empty($file['tmp_name']) || !file_exists($file['tmp_name'])) {
+            return array('ok' => false, 'error' => 'Uploaded temporary file missing on server.');
         }
 
         $clean_rel = ltrim(str_replace('../', '', $target_dir), '/');
         $abs_dir = dirname(__DIR__) . '/' . $clean_rel;
 
         if (!is_dir($abs_dir)) {
-            @mkdir($abs_dir, 0777, true);
+            if (!@mkdir($abs_dir, 0777, true)) {
+                return array('ok' => false, 'error' => 'Failed to create target directory: ' . $clean_rel);
+            }
         }
         @chmod($abs_dir, 0777);
 
         $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
         $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
         if (!in_array($ext, $allowed, true)) {
-            return false;
+            return array('ok' => false, 'error' => 'Invalid file extension (.' . $ext . '). Allowed: JPG, PNG, WEBP, GIF, SVG');
         }
 
         $new_name = $prefix . time() . "_" . rand(100, 999) . "." . $ext;
@@ -68,9 +87,9 @@ if (!function_exists('wcb_save_uploaded_file')) {
 
         if ($saved) {
             @chmod($target_file, 0666);
-            return $new_name;
+            return array('ok' => true, 'filename' => $new_name);
         }
-        return false;
+        return array('ok' => false, 'error' => 'Unable to write file to target directory.');
     }
 }
 
@@ -107,17 +126,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
 
     // Handle global Website/Admin Logo Upload
     if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
-        $saved_logo = wcb_save_uploaded_file($_FILES['app_logo'], "../assets/img/logo/", "site_logo_");
-        if ($saved_logo) {
-            $app_logo_path = "assets/img/logo/" . $saved_logo;
+        $logo_res = wcb_save_uploaded_file($_FILES['app_logo'], "assets/img/logo/", "site_logo_");
+        if (!empty($logo_res['ok']) && !empty($logo_res['filename'])) {
+            $app_logo_path = "assets/img/logo/" . $logo_res['filename'];
         }
     }
 
     // Handle Popup Image Upload
     if (isset($_FILES['popup_image']) && $_FILES['popup_image']['error'] == 0) {
-        $saved_popup = wcb_save_uploaded_file($_FILES['popup_image'], "../assets/img/banners/", "popup_");
-        if ($saved_popup) {
-            $popup_image_path = "assets/img/banners/" . $saved_popup;
+        $popup_res = wcb_save_uploaded_file($_FILES['popup_image'], "assets/img/banners/", "popup_");
+        if (!empty($popup_res['ok']) && !empty($popup_res['filename'])) {
+            $popup_image_path = "assets/img/banners/" . $popup_res['filename'];
         }
     }
 
@@ -142,15 +161,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
 
 // 2. HANDLE NEW SLIDER UPLOAD
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['upload_slider'])) {
-    if (isset($_FILES['slider_image']) && $_FILES['slider_image']['error'] == 0) {
-        $saved_slider = wcb_save_uploaded_file($_FILES['slider_image'], "../assets/img/banners/", "banner_");
-        if ($saved_slider) {
+    if (isset($_FILES['slider_image'])) {
+        $res = wcb_save_uploaded_file($_FILES['slider_image'], "assets/img/banners/", "banner_");
+        if (!empty($res['ok']) && !empty($res['filename'])) {
+            $saved_slider = $res['filename'];
             $db_path = "assets/img/banners/" . $saved_slider;
             $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
             $msg = "New Banner Uploaded Successfully!";
             $msg_type = "success";
         } else {
-            $msg = "Failed to save file. Check directory permissions.";
+            $msg = "Upload Error: " . ($res['error'] ?? 'Failed to save file. Check directory permissions.');
             $msg_type = "error";
         }
     } else {
