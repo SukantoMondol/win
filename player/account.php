@@ -11,13 +11,19 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$user_query = $conn->query("SELECT * FROM users WHERE id=$user_id");
-$user = $user_query->fetch_assoc();
+$user_id = intval($_SESSION['user_id'] ?? 0);
+$user_query = $conn->query("SELECT * FROM users WHERE id=$user_id LIMIT 1");
+$user = $user_query ? $user_query->fetch_assoc() : null;
+
+if (!$user) {
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
 
 $settings_query = $conn->query("SELECT * FROM settings WHERE id=1");
-$settings = $settings_query->fetch_assoc();
-$site_name = $settings['site_name'] ?? 'SHA75';
+$settings = $settings_query ? $settings_query->fetch_assoc() : [];
+$site_name = $settings['site_name'] ?? 'BAJIXWIN';
 ?>
 
 <!DOCTYPE html>
@@ -180,24 +186,24 @@ $site_name = $settings['site_name'] ?? 'SHA75';
 
         <div class="flex items-center gap-4">
             <div class="avatar-box">
-                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($user['username']); ?>&background=ffd700&color=333&bold=true" class="w-full h-full object-cover">
+                <img src="https://ui-avatars.com/api/?name=<?php echo urlencode($user['username'] ?? 'User'); ?>&background=ffd700&color=333&bold=true" class="w-full h-full object-cover">
             </div>
             <div class="flex-1">
                 <div class="vip-tag flex items-center w-fit gap-1">
                     <i class="fas fa-medal text-[8px]"></i> VIP1
                 </div>
                 <div class="text-xl font-extrabold text-gray-800 mt-1 flex items-center gap-2">
-                    <?php echo htmlspecialchars($user['username']); ?>
+                    <?php echo htmlspecialchars($user['username'] ?? 'User'); ?>
                     <i class="far fa-copy text-sm text-gray-400"></i>
                 </div>
-                <div class="text-[11px] text-gray-400 mt-1">Nickname: <?php echo htmlspecialchars($user['username']); ?> <i class="fas fa-pencil-alt text-[9px]"></i></div>
-                <div class="text-[10px] text-gray-400">Joined since: 2025-09-09</div>
+                <div class="text-[11px] text-gray-400 mt-1">Nickname: <?php echo htmlspecialchars($user['username'] ?? 'User'); ?> <i class="fas fa-pencil-alt text-[9px]"></i></div>
+                <div class="text-[10px] text-gray-400">Joined since: <?php echo htmlspecialchars(substr($user['created_at'] ?? '2025-09-09', 0, 10)); ?></div>
             </div>
         </div>
 
         <div class="mt-6">
             <div class="flex items-center gap-2">
-                <span class="text-3xl font-black text-gray-800">৳ <?php echo number_format($user['balance'], 2); ?></span>
+                <span class="text-3xl font-black text-gray-800">৳ <?php echo number_format(floatval($user['balance'] ?? 0), 2); ?></span>
                 <i class="fas fa-sync-alt text-gray-400 text-sm cursor-pointer" onclick="location.reload()"></i>
             </div>
         </div>
