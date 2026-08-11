@@ -14,22 +14,20 @@ if (!function_exists('get_site_theme_css')) {
             ? "background: {$bg} !important; background-attachment: fixed !important;" 
             : "background-color: {$bg} !important; background-image: none !important;";
 
-        return "
-        <!-- Dynamic Site Theme Customizer -->
-        <style id='dynamic-site-theme-customizer'>
+        return "<style id='dynamic-site-theme-customizer'>
             :root {
-                --bg-deep: {$primary};
-                --bg-main: {$primary};
-                --bg-card: {$primary};
-                --teal: {$primary};
-                --teal-light: {$primary};
-                --gold: {$accent};
-                --gold-text: {$accent};
-                --gold-dark: {$accent};
-                --green-btn: {$primary};
-                --text-main: {$text};
+                --bg-deep: {$primary} !important;
+                --bg-main: {$primary} !important;
+                --bg-card: {$primary} !important;
+                --teal: {$primary} !important;
+                --teal-light: {$primary} !important;
+                --gold: {$accent} !important;
+                --gold-text: {$accent} !important;
+                --gold-dark: {$accent} !important;
+                --green-btn: {$primary} !important;
+                --text-main: {$text} !important;
             }
-            body {
+            html, body {
                 {$bgCss}
                 color: {$text} !important;
             }
@@ -71,8 +69,7 @@ if (!function_exists('get_site_theme_css')) {
             .nav-item.active i, .nav-item.active span, .bnav-item.active {
                 color: {$accent} !important;
             }
-        </style>
-        ";
+        </style>";
     }
 }
 ?>

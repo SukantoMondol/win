@@ -103,6 +103,11 @@ $is_webview = (strpos($ua, 'BajiPari-WebView-App') !== false);
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <?php 
+    $theme_helper_path = file_exists('includes/theme_helper.php') ? 'includes/theme_helper.php' : '../includes/theme_helper.php';
+    if (file_exists($theme_helper_path)) { require_once $theme_helper_path; }
+    if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?? []); }
+    ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
