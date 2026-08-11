@@ -3,6 +3,7 @@ session_start();
 require __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/propay_gateway_helper.php';
 require_once __DIR__ . '/../includes/lgpay_gateway_helper.php';
+require_once __DIR__ . '/../includes/nekpay_gateway_helper.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
@@ -11,14 +12,21 @@ if (!isset($_SESSION['user_id'])) {
 
 propay_ensure_schema($conn);
 lgpay_ensure_schema($conn);
-if (function_exists('wcb_force_lgpay_only')) { @wcb_force_lgpay_only($conn); }
+nekpay_ensure_schema($conn);
+
 $uid = intval($_SESSION['user_id']);
 $user = $conn->query("SELECT * FROM users WHERE id=$uid")->fetch_assoc();
 $settings = $conn->query("SELECT * FROM settings WHERE id=1")->fetch_assoc();
 $txn_settings = propay_get_site_transaction_settings($conn);
 
+$nek_settings = nekpay_get_settings($conn);
+if (!empty($nek_settings['is_enabled']) && !empty($nek_settings['merchant_code'])) {
+    $target_action = "nekpay_deposit_start.php";
+} else {
+    $target_action = "lgpay_deposit_start.php";
+}
+
 $notice_text = !empty($settings['deposit_notice']) ? $settings['deposit_notice'] : 'Please check the correct number before payment.';
-$target_action = "lgpay_deposit_start.php";
 $promotions = $conn->query("SELECT id, title FROM promotions WHERE status='active' AND (category IN ('all','deposit') OR category='' OR category IS NULL) AND (start_date IS NULL OR start_date <= CURDATE()) AND (end_date IS NULL OR end_date >= CURDATE()) ORDER BY id DESC")->fetch_all(MYSQLI_ASSOC);
 
 $min_deposit = max(1, (float)($txn_settings['min_deposit_amount'] ?? 100));
