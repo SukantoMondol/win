@@ -259,6 +259,30 @@ function nekpay_create_deposit_order($conn, $userId, $amount, $methodName = 'bKa
     $respCode = $json['respCode'] ?? null;
     $payInfo  = $json['payInfo'] ?? null;
 
+    if ($respCode !== 'SUCCESS' && (strpos(($json['tradeMsg'] ?? ''), 'MERCHANT_HAS_NO_GATEWAY') !== false || strpos(($json['errorMsg'] ?? ''), 'MERCHANT_HAS_NO_GATEWAY') !== false) && $params['pay_type'] !== '2220') {
+        // Retry with 2220 (BANK2 default channel bound in NEKpay merchant backstage)
+        $params['pay_type'] = '2220';
+        $params['sign'] = nekpay_generate_deposit_sign($params, $paymentKey);
+
+        $ch2 = curl_init();
+        curl_setopt($ch2, CURLOPT_URL, $endpoint);
+        curl_setopt($ch2, CURLOPT_POST, true);
+        curl_setopt($ch2, CURLOPT_POSTFIELDS, http_build_query($params));
+        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch2, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        $response2 = curl_exec($ch2);
+        curl_close($ch2);
+
+        $json2 = json_decode($response2, true);
+        if ($json2 && ($json2['respCode'] ?? '') === 'SUCCESS' && !empty($json2['payInfo'])) {
+            $json = $json2;
+            $respCode = $json2['respCode'];
+            $payInfo = $json2['payInfo'];
+        }
+    }
+
     if ($respCode === 'SUCCESS' && !empty($payInfo)) {
         // Record pending deposit order in DB
         $stmt = $conn->prepare("INSERT INTO transactions_fake (user_id, amount, status, type, wallet_number, promo_id) VALUES (?, ?, 'pending', 'deposit', ?, ?)");
