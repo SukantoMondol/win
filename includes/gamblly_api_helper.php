@@ -13,8 +13,9 @@ if (!function_exists('gamblly_api_default_config')) {
             'withdraw_url' => 'https://game.gambllyapi.com/production/v1/getWithdraw.php',
             'balance_url' => 'https://game.gambllyapi.com/production/v1/getBalance.php',
             'callback_pull_url' => 'https://game.gambllyapi.com/production/v1/callback.php',
-            'callback_url' => 'https://jb66.net/api/game/callback',
+            'callback_url' => 'https://bajixwin.com/api/game/callback',
             'api_key' => 'ee761aea015CodeHub94fbe22b19aa61',
+            'agent_code' => 'b2cb3',
             'member_prefix' => '',
             'member_suffix' => '',
             'currency' => 'BDT',
@@ -45,30 +46,42 @@ if (!function_exists('gamblly_api_get_config')) {
         if (!is_array($settings)) { $settings = array(); }
         $defaults = gamblly_api_default_config();
 
+        // FORCE correct API URL - gambllyapi.com (no hyphen). Any saved URL with 'gamblly-api.com' is old/wrong.
         $endpoint = gamblly_api_get_setting_value($settings, array('gamblly_launch_url', 'api_endpoint'), $defaults['launch_url']);
-        if ($endpoint === '' || (stripos($endpoint, 'gambllyapi.com') === false && stripos($endpoint, 'gamblly-api.com') === false)) {
-            $endpoint = $defaults['launch_url'];
+        // Always force correct domain - reject old gamblly-api.com (with hyphen)
+        if ($endpoint === '' || stripos($endpoint, 'gambllyapi.com') === false) {
+            $endpoint = $defaults['launch_url']; // https://game.gambllyapi.com/...
         }
 
         $apiKey = gamblly_api_get_setting_value($settings, array('gamblly_api_key', 'api_token'), $defaults['api_key']);
-        $prefix = gamblly_api_get_setting_value($settings, array('gamblly_member_prefix', 'api_prefix', 'agent_code'), $defaults['member_prefix']);
-        $suffix = gamblly_api_get_setting_value($settings, array('gamblly_member_suffix', 'api_suffix', 'secret_key'), $defaults['member_suffix']);
+        $agentCode = gamblly_api_get_setting_value($settings, array('gamblly_agent_code', 'agent_code', 'api_suffix'), $defaults['agent_code']);
+        $prefix = gamblly_api_get_setting_value($settings, array('gamblly_member_prefix', 'api_prefix'), $defaults['member_prefix']);
+        $suffix = gamblly_api_get_setting_value($settings, array('gamblly_member_suffix'), $defaults['member_suffix']);
 
+        $agentCode = preg_replace('/[^A-Za-z0-9_\-]/', '', $agentCode);
         $prefix = preg_replace('/[^A-Za-z0-9_\-]/', '', $prefix);
         $suffix = preg_replace('/[^A-Za-z0-9_\-]/', '', $suffix);
 
+        // Callback URL must always point to bajixwin.com
+        $callbackUrl = gamblly_api_get_setting_value($settings, 'gamblly_callback_url', $defaults['callback_url']);
+        if (stripos($callbackUrl, 'bajixwin.com') === false && stripos($callbackUrl, 'jb66.net') === false) {
+            $callbackUrl = $defaults['callback_url'];
+        }
+
         return array(
-            'launch_url' => $endpoint,
-            'withdraw_url' => gamblly_api_get_setting_value($settings, 'gamblly_withdraw_url', $defaults['withdraw_url']),
-            'balance_url' => gamblly_api_get_setting_value($settings, 'gamblly_balance_url', $defaults['balance_url']),
-            'callback_pull_url' => gamblly_api_get_setting_value($settings, 'gamblly_callback_api_url', $defaults['callback_pull_url']),
-            'callback_url' => gamblly_api_get_setting_value($settings, 'gamblly_callback_url', $defaults['callback_url']),
-            'api_key' => $apiKey,
-            'member_prefix' => $prefix,
-            'member_suffix' => $suffix,
-            'currency' => strtoupper(gamblly_api_get_setting_value($settings, 'currency_code', $defaults['currency'])),
-            'language' => strtolower(gamblly_api_get_setting_value($settings, 'gamblly_language', $defaults['language'])),
-            'platform' => gamblly_api_get_setting_value($settings, 'gamblly_platform', $defaults['platform']),
+            'launch_url'       => $endpoint,
+            'withdraw_url'     => gamblly_api_get_setting_value($settings, 'gamblly_withdraw_url', $defaults['withdraw_url']),
+            'balance_url'      => gamblly_api_get_setting_value($settings, 'gamblly_balance_url', $defaults['balance_url']),
+            'callback_pull_url'=> gamblly_api_get_setting_value($settings, 'gamblly_callback_api_url', $defaults['callback_pull_url']),
+            'callback_url'     => $callbackUrl,
+            'api_key'          => $apiKey,
+            'agent_code'       => $agentCode,
+            'secret_key'       => $agentCode, // alias for callback key verification
+            'member_prefix'    => $prefix,
+            'member_suffix'    => $suffix,
+            'currency'         => strtoupper(gamblly_api_get_setting_value($settings, 'currency_code', $defaults['currency'])),
+            'language'         => strtolower(gamblly_api_get_setting_value($settings, 'gamblly_language', $defaults['language'])),
+            'platform'         => gamblly_api_get_setting_value($settings, 'gamblly_platform', $defaults['platform']),
             'zero_local_on_launch' => gamblly_api_get_setting_value($settings, 'gamblly_zero_local_on_launch', $defaults['zero_local_on_launch'])
         );
     }
