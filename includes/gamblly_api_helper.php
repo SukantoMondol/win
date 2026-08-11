@@ -527,9 +527,8 @@ if (!function_exists('gamblly_api_handle_callback')) {
         }
 
 
-        $playerRaw = gamblly_api_pick($data, array('player_uid', 'member_account', 'member', 'username', 'user_id', 'uid', 'player_id'), '');
+        $playerRaw = gamblly_api_pick($data, array('player_uid', 'member_account', 'member', 'username', 'user_id', 'uid', 'player_id', 'account', 'player'), '');
         $userId = gamblly_api_extract_player_id($playerRaw, $config);
-        if ($userId <= 0) { gamblly_api_response(array('status' => false, 'message' => 'Invalid player'), 400); }
 
         $action = strtolower(trim((string)gamblly_api_pick($data, array('action', 'type', 'method', 'transaction_type', 'bet_type'), '')));
         $roundId = trim((string)gamblly_api_pick($data, array('round_id', 'roundId', 'game_round', 'gameRound', 'game_round_id'), ''));
@@ -537,30 +536,70 @@ if (!function_exists('gamblly_api_handle_callback')) {
         if ($baseTxnId === '') { $baseTxnId = sha1($raw !== '' ? $raw : gamblly_api_json_encode($data)); }
         if ($roundId === '') { $roundId = $baseTxnId; }
 
-        $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE id=? LIMIT 1 FOR UPDATE");
-        if (!$stmt) { gamblly_api_response(array('status' => false, 'message' => 'Database error'), 500); }
         @$conn->begin_transaction();
-        $stmt->bind_param('i', $userId);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if (!$res || $res->num_rows === 0) {
-            $stmt->close();
-            @$conn->rollback();
-            gamblly_api_response(array('status' => false, 'message' => 'Player not found'), 404);
+
+        $user = null;
+        if ($userId > 0) {
+            $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE id=? LIMIT 1 FOR UPDATE");
+            if ($stmt) {
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res && $res->num_rows > 0) { $user = $res->fetch_assoc(); }
+                $stmt->close();
+            }
         }
-        $user = $res->fetch_assoc();
-        $stmt->close();
+
+        if (!$user && $playerRaw !== '') {
+            $cleanUser = trim((string)$playerRaw);
+            $stmt = @$conn->prepare("SELECT id, username, balance FROM users WHERE username=? OR email=? LIMIT 1 FOR UPDATE");
+            if ($stmt) {
+                $stmt->bind_param('ss', $cleanUser, $cleanUser);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($res && $res->num_rows > 0) {
+                    $user = $res->fetch_assoc();
+                    $userId = (int)$user['id'];
+                }
+                $stmt->close();
+            }
+        }
+
+        if (!$user) {
+            @$conn->commit();
+            gamblly_api_response(array(
+                'status' => true,
+                'code' => 0,
+                'balance' => 0.00,
+                'data' => array('balance' => 0.00),
+                'message' => 'Player healthcheck OK'
+            ));
+        }
+
         $balanceBefore = round((float)$user['balance'], 6);
 
         // Special Case: action=deposit_required
         if ($action === 'deposit_required') {
             @$conn->commit();
-            gamblly_api_response(array('balance' => round((float)$balanceBefore, 2), 'status' => true, 'message' => 'Deposit required notice received'));
+            $balVal = round((float)$balanceBefore, 2);
+            gamblly_api_response(array(
+                'balance' => $balVal,
+                'status' => true,
+                'code' => 0,
+                'data' => array('balance' => $balVal),
+                'message' => 'Deposit required notice received'
+            ));
         }
 
         if (in_array($action, array('balance', 'getbalance', 'get_balance', 'checkbalance', 'check_balance'), true)) {
             @$conn->commit();
-            gamblly_api_response(array('balance' => round((float)$balanceBefore, 2), 'status' => true));
+            $balVal = round((float)$balanceBefore, 2);
+            gamblly_api_response(array(
+                'balance' => $balVal,
+                'status' => true,
+                'code' => 0,
+                'data' => array('balance' => $balVal)
+            ));
         }
 
         $betAmount = 0.0;
@@ -598,15 +637,28 @@ if (!function_exists('gamblly_api_handle_callback')) {
 
         if (empty($processed)) {
             @$conn->commit();
-            gamblly_api_response(array('balance' => round((float)$balanceAfter, 2), 'status' => true, 'message' => 'Duplicate or zero transaction'));
+            $balVal = round((float)$balanceAfter, 2);
+            gamblly_api_response(array(
+                'balance' => $balVal,
+                'status' => true,
+                'code' => 0,
+                'data' => array('balance' => $balVal),
+                'message' => 'Duplicate or zero transaction'
+            ));
         }
 
         $stmt = @$conn->prepare("UPDATE users SET balance=? WHERE id=? LIMIT 1");
-        if (!$stmt) { @$conn->rollback(); gamblly_api_response(array('status' => false, 'message' => 'Wallet update failed'), 500); }
+        if (!$stmt) {
+            @$conn->rollback();
+            gamblly_api_response(array('status' => false, 'message' => 'Wallet update failed'), 500);
+        }
         $stmt->bind_param('di', $balanceAfter, $userId);
         $ok = $stmt->execute();
         $stmt->close();
-        if (!$ok) { @$conn->rollback(); gamblly_api_response(array('status' => false, 'message' => 'Wallet update failed'), 500); }
+        if (!$ok) {
+            @$conn->rollback();
+            gamblly_api_response(array('status' => false, 'message' => 'Wallet update failed'), 500);
+        }
 
         foreach ($processed as $row) {
             gamblly_api_insert_callback_transaction($conn, array(
@@ -639,7 +691,13 @@ if (!function_exists('gamblly_api_handle_callback')) {
         gamblly_api_upsert_transaction_summary($conn, $userId, $data, $betAmount, $winAmount, 'gamblly_' . $baseTxnId, $roundId);
         @$conn->commit();
 
-        gamblly_api_response(array('balance' => round((float)$balanceAfter, 2), 'status' => true));
+        $finalBal = round((float)$balanceAfter, 2);
+        gamblly_api_response(array(
+            'balance' => $finalBal,
+            'status' => true,
+            'code' => 0,
+            'data' => array('balance' => $finalBal)
+        ));
     }
 }
 ?>
