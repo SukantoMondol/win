@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_game_api_key']))
     $token = trim((string)($_POST['api_token'] ?? ''));
     $secret = trim((string)($_POST['secret_key'] ?? ''));
     $agent = game_api_clean_no_space($_POST['agent_code'] ?? '');
+    $endpoint = trim((string)($_POST['api_endpoint'] ?? ''));
 
     if ($agent === '') {
         $error = 'Agent Code is required.';
@@ -26,6 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_game_api_key']))
         game_api_set_setting($conn, 'api_token', $token);
         game_api_set_setting($conn, 'secret_key', $secret);
         game_api_set_setting($conn, 'agent_code', $agent);
+        if ($endpoint !== '') {
+            game_api_set_setting($conn, 'api_endpoint', $endpoint);
+            game_api_set_setting($conn, 'gamblly_launch_url', $endpoint);
+        }
 
         // Save active provider as GAMBLLY
         game_api_set_setting($conn, 'game_api_provider', 'GAMBLLY');
@@ -37,6 +42,8 @@ $config = game_api_get_settings($conn, true);
 $apiToken = (string)($config['api_token'] ?? '');
 $secretKey = (string)($config['secret_key'] ?? '');
 $agentCode = (string)($config['agent_code'] ?? '');
+$apiEndpoint = (string)($config['api_endpoint'] ?? 'https://game.gambllyapi.com/production/v1/gameLaunch.php');
+if ($apiEndpoint === '') { $apiEndpoint = 'https://game.gambllyapi.com/production/v1/gameLaunch.php'; }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,12 +84,19 @@ $agentCode = (string)($config['agent_code'] ?? '');
                         <input type="text" name="agent_code" value="<?php echo game_api_h($agentCode); ?>" class="w-full border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="MR_n93AA" required>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-bold text-gray-600 mb-1">API Endpoint URL <span class="text-red-500">★ Important</span></label>
+                        <input type="url" name="api_endpoint" value="<?php echo game_api_h($apiEndpoint); ?>" class="w-full border border-gray-300 rounded-lg p-3 font-mono text-sm focus:ring-2 focus:ring-yellow-400 outline-none" placeholder="https://game.gambllyapi.com/production/v1/gameLaunch.php">
+                        <p class="text-xs text-red-600 mt-1 font-semibold">⚠️ Make sure URL has NO hyphen: <code>gambllyapi.com</code> (NOT <code>gamblly-api.com</code>)</p>
+                    </div>
+
                     <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 space-y-2">
                         <p class="font-bold"><i class="fas fa-info-circle"></i> Gamblly API Settings Guide:</p>
                         <ul class="list-disc list-inside space-y-1">
                             <li><strong>API Key / Validation Token:</strong> Your Gamblly API Key (e.g. <code>ee761aea015CodeHub94fbe22b19aa61</code>)</li>
                             <li><strong>Secret Key (Suffix):</strong> Your Gamblly API Suffix (e.g. <code>b2cb3</code>)</li>
                             <li><strong>API Prefix / Agent Code:</strong> Your Gamblly API Prefix/Agent code (e.g. <code>b2cb3</code>)</li>
+                            <li><strong>API Endpoint URL:</strong> <code>https://game.gambllyapi.com/production/v1/gameLaunch.php</code></li>
                             <li><strong>Callback URL:</strong> <code>https://bajixwin.com/api/game/callback</code></li>
                         </ul>
                     </div>
