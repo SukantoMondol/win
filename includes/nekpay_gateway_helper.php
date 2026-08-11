@@ -45,6 +45,8 @@ function nekpay_ensure_schema($conn) {
     $defaultKey = '7c1adc2ec9f04bc0a00a1c0fd88eee00';
     @$conn->query("INSERT IGNORE INTO `payment_gateway_settings` (`provider`, `merchant_code`, `secret_code`, `api_base_url`, `is_enabled`, `failover_priority`) VALUES ('nekpay', '', '$defaultKey', '$defaultBase', 1, 1)");
 
+    @$conn->query("ALTER TABLE `transactions_fake` MODIFY `wallet_number` VARCHAR(191) DEFAULT NULL");
+
     return true;
 }
 
@@ -193,7 +195,7 @@ function nekpay_create_deposit_order($conn, $userId, $amount, $methodName = 'bKa
         $payType = '2220';
     }
 
-    $mchOrderNo = 'NEK' . date('YmdHis') . rand(1000, 9999);
+    $mchOrderNo = 'NK' . time() . rand(100, 999);
     $notifyUrl = nekpay_url('/api/nekpay_callback.php');
     $pageUrl = nekpay_url('/player/dashboard.php');
 
