@@ -61,40 +61,57 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
         $app_logo_path = $existing_row['app_logo'] ?? '';
     }
 
-    // Handle global Website/Admin Logo Upload
-    if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
-        $target_dir = "../assets/img/logo/";
-        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
+    // Helper for robust file upload
+    function wcb_save_uploaded_file($file, $target_dir, $prefix = 'img_') {
+        if (!isset($file) || !is_array($file) || $file['error'] != 0 || empty($file['tmp_name'])) {
+            return false;
+        }
+        if (!is_dir($target_dir)) {
+            @mkdir($target_dir, 0777, true);
+        }
         @chmod($target_dir, 0777);
 
-        $file_ext = strtolower(pathinfo($_FILES["app_logo"]["name"], PATHINFO_EXTENSION));
+        $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
         $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
-        if (in_array($file_ext, $allowed)) {
-            $new_name = "site_logo_" . time() . "." . $file_ext;
-            $target_file = $target_dir . $new_name;
-            if (@move_uploaded_file($_FILES["app_logo"]["tmp_name"], $target_file) || @copy($_FILES["app_logo"]["tmp_name"], $target_file)) {
-                @chmod($target_file, 0666);
-                $app_logo_path = "assets/img/logo/" . $new_name;
+        if (!in_array($ext, $allowed, true)) {
+            return false;
+        }
+
+        $new_name = $prefix . time() . "_" . rand(100, 999) . "." . $ext;
+        $target_file = rtrim($target_dir, '/') . '/' . $new_name;
+
+        $tmp = $file["tmp_name"];
+        $saved = @move_uploaded_file($tmp, $target_file);
+        if (!$saved) {
+            $saved = @copy($tmp, $target_file);
+        }
+        if (!$saved && file_exists($tmp)) {
+            $content = @file_get_contents($tmp);
+            if ($content !== false && strlen($content) > 0) {
+                $saved = (@file_put_contents($target_file, $content) !== false);
             }
+        }
+
+        if ($saved) {
+            @chmod($target_file, 0666);
+            return $new_name;
+        }
+        return false;
+    }
+
+    // Handle global Website/Admin Logo Upload
+    if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
+        $saved_logo = wcb_save_uploaded_file($_FILES['app_logo'], "../assets/img/logo/", "site_logo_");
+        if ($saved_logo) {
+            $app_logo_path = "assets/img/logo/" . $saved_logo;
         }
     }
 
     // Handle Popup Image Upload
     if (isset($_FILES['popup_image']) && $_FILES['popup_image']['error'] == 0) {
-        $target_dir = "../assets/img/banners/";
-        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
-        @chmod($target_dir, 0777);
-        
-        $file_ext = strtolower(pathinfo($_FILES["popup_image"]["name"], PATHINFO_EXTENSION));
-        $new_name = "popup_" . time() . "." . $file_ext;
-        $target_file = $target_dir . $new_name;
-        
-        $allowed = array("jpg", "png", "jpeg", "gif", "webp");
-        if (in_array($file_ext, $allowed)) {
-            if (@move_uploaded_file($_FILES["popup_image"]["tmp_name"], $target_file) || @copy($_FILES["popup_image"]["tmp_name"], $target_file)) {
-                @chmod($target_file, 0666);
-                $popup_image_path = "assets/img/banners/" . $new_name;
-            }
+        $saved_popup = wcb_save_uploaded_file($_FILES['popup_image'], "../assets/img/banners/", "popup_");
+        if ($saved_popup) {
+            $popup_image_path = "assets/img/banners/" . $saved_popup;
         }
     }
 
@@ -117,25 +134,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
     }
 }
 
-// 2. HANDLE NEW SLIDER UPLOAD (Same as before)
+// 2. HANDLE NEW SLIDER UPLOAD
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['upload_slider'])) {
     if (isset($_FILES['slider_image']) && $_FILES['slider_image']['error'] == 0) {
-        $target_dir = "../assets/img/banners/";
-        if (!is_dir($target_dir)) { @mkdir($target_dir, 0777, true); }
-        @chmod($target_dir, 0777);
-        $file_extension = pathinfo($_FILES["slider_image"]["name"], PATHINFO_EXTENSION);
-        $new_filename = "banner_" . time() . "." . $file_extension;
-        $target_file = $target_dir . $new_filename;
-        $allowed_types = array("jpg", "png", "jpeg", "gif", "webp");
-        if (in_array(strtolower($file_extension), $allowed_types)) {
-            if (@move_uploaded_file($_FILES["slider_image"]["tmp_name"], $target_file) || @copy($_FILES["slider_image"]["tmp_name"], $target_file)) {
-                @chmod($target_file, 0666);
-                $db_path = "assets/img/banners/" . $new_filename;
-                $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
-                $msg = "New Banner Uploaded!";
-                $msg_type = "success";
-            } else { $msg = "Failed to move file."; $msg_type = "error"; }
-        } else { $msg = "Invalid file type."; $msg_type = "error"; }
+        $saved_slider = wcb_save_uploaded_file($_FILES['slider_image'], "../assets/img/banners/", "banner_");
+        if ($saved_slider) {
+            $db_path = "assets/img/banners/" . $saved_slider;
+            $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
+            $msg = "New Banner Uploaded Successfully!";
+            $msg_type = "success";
+        } else {
+            $msg = "Failed to save file. Check directory permissions.";
+            $msg_type = "error";
+        }
+    } else {
+        $msg = "Please select a valid image file to upload.";
+        $msg_type = "error";
     }
 }
 
@@ -170,7 +184,7 @@ $sliders = $conn->query("SELECT * FROM sliders ORDER BY id DESC");
 
     <?php include '../includes/sidebar_admin.php'; ?>
 
-    <main class="lg:ml-64 p-4 lg:p-8 min-h-screen transition-all duration-300">
+    <main class="lg:ml-64 p-4 lg:p-8 pt-20 lg:pt-20 min-h-screen transition-all duration-300">
         
         <?php include '../includes/header.php'; ?>
 
