@@ -490,6 +490,27 @@ if (!function_exists('gamblly_api_response')) {
             http_response_code($httpCode);
             header('Content-Type: application/json; charset=utf-8');
         }
+        if (is_array($payload)) {
+            if (isset($payload['balance'])) {
+                $bal = round((float)$payload['balance'], 2);
+                $payload['balance'] = $bal;
+                $payload['user_balance'] = $bal;
+                $payload['current_balance'] = $bal;
+                $payload['available_balance'] = $bal;
+                $payload['member_balance'] = $bal;
+                $payload['wallet_balance'] = $bal;
+                $payload['amount'] = $bal;
+            }
+            if (!isset($payload['status'])) {
+                $payload['status'] = true;
+            }
+            if ($payload['status'] === true || $payload['status'] === 200 || $payload['status'] === '200') {
+                $payload['code'] = 0;
+                $payload['errorCode'] = 0;
+                $payload['status_code'] = 0;
+                $payload['success'] = true;
+            }
+        }
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
