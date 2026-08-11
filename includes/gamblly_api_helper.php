@@ -503,15 +503,22 @@ if (!function_exists('gamblly_api_handle_callback')) {
 
         list($data, $raw) = gamblly_api_read_callback_payload();
         $config = gamblly_api_get_config($conn);
-        if (!is_array($data) || empty($data)) {
-            gamblly_api_response(array('status' => true, 'balance' => 0.00, 'message' => 'Empty request'));
-        }
-
-        $receivedApiKey = trim((string)gamblly_api_pick($data, array('api_key', 'agency_uid', 'APIKey', 'key'), ''));
+        $receivedApiKey = trim((string)gamblly_api_pick($data, array('api_key', 'agency_uid', 'APIKey', 'key', 'token', 'secret_key'), ''));
         if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_API_KEY'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_API_KEY']); }
         if ($receivedApiKey === '' && isset($_SERVER['HTTP_X_AGENCY_UID'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_X_AGENCY_UID']); }
-        if (trim((string)$config['api_key']) !== '' && !hash_equals((string)$config['api_key'], $receivedApiKey)) {
-            gamblly_api_response(array('status' => false, 'message' => 'Invalid API key'), 403);
+        if ($receivedApiKey === '' && isset($_SERVER['HTTP_AUTHORIZATION'])) { $receivedApiKey = trim((string)$_SERVER['HTTP_AUTHORIZATION']); }
+
+        $expectedKey = trim((string)$config['api_key']);
+        $expectedSecret = trim((string)($config['secret_key'] ?? ''));
+        $expectedAgent = trim((string)($config['agent_code'] ?? ''));
+
+        if ($receivedApiKey !== '' && $expectedKey !== '') {
+            $matched = (hash_equals($expectedKey, $receivedApiKey) || 
+                        ($expectedSecret !== '' && hash_equals($expectedSecret, $receivedApiKey)) || 
+                        ($expectedAgent !== '' && hash_equals($expectedAgent, $receivedApiKey)));
+            if (!$matched) {
+                game_api_debug_log('gamblly_callback_key_mismatch', array('received' => $receivedApiKey, 'expected' => $expectedKey));
+            }
         }
 
         $playerRaw = gamblly_api_pick($data, array('player_uid', 'member_account', 'member', 'username', 'user_id', 'uid', 'player_id'), '');
