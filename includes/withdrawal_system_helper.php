@@ -207,13 +207,74 @@ if (!function_exists('wcb_create_pending_withdraw_request')) {
 
 if (!function_exists('wcb_process_pending_withdrawal')) {
     function wcb_process_pending_withdrawal($conn, $transactionId, $adminId = 0) {
-        if (function_exists('lgpay_ensure_schema')) { @lgpay_ensure_schema($conn); }
         $transactionId = intval($transactionId);
+        $adminId = intval($adminId);
         if ($transactionId <= 0) { return array('success' => false, 'message' => 'Invalid withdrawal request.'); }
-        if (function_exists('lgpay_is_available') && lgpay_is_available($conn, false) && function_exists('lgpay_submit_withdrawal_from_transaction')) {
-            return lgpay_submit_withdrawal_from_transaction($conn, $transactionId, intval($adminId));
+
+        // Fetch transaction details
+        $stmt = $conn->prepare("SELECT * FROM transactions_fake WHERE id=? AND type='withdraw' LIMIT 1");
+        if (!$stmt) { return array('success' => false, 'message' => 'Database query failed.'); }
+        $stmt->bind_param('i', $transactionId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if (!$res || $res->num_rows === 0) {
+            $stmt->close();
+            return array('success' => false, 'message' => 'Withdrawal request not found.');
         }
-        return array('success' => false, 'message' => 'LG Pay payout gateway is not configured or disabled. Please set LG Pay App ID and Secret Key in Payment Gateway Settings.');
+        $tx = $res->fetch_assoc();
+        $stmt->close();
+
+        if ($tx['status'] !== 'pending') {
+            return array('success' => false, 'message' => 'Withdrawal request has already been processed.');
+        }
+
+        // 1. NEKpay Payout Support
+        if (function_exists('nekpay_get_settings') && function_exists('nekpay_create_payout')) {
+            $nekConfig = nekpay_get_settings($conn);
+            if (!empty($nekConfig['is_enabled']) && !empty($nekConfig['merchant_code']) && !empty($nekConfig['secret_code'])) {
+                $methodLower = strtolower(trim((string)($tx['method'] ?? '')));
+                $bankCode = 'baksh';
+                if (strpos($methodLower, 'nagad') !== false) { $bankCode = 'ngand'; }
+                elseif (strpos($methodLower, 'rocket') !== false) { $bankCode = 'roket'; }
+
+                $accountNumber = trim((string)($tx['wallet_number'] ?? ''));
+                $amount = (float)($tx['amount'] ?? 0);
+                $merchantTxId = 'PO' . date('YmdHis') . $transactionId;
+
+                $payoutRes = nekpay_create_payout($conn, $merchantTxId, $bankCode, $accountNumber, $accountNumber, $amount);
+                if (!empty($payoutRes['success'])) {
+                    $note = 'Approved via NEKpay Payout (Tx: ' . $merchantTxId . ') by admin #' . $adminId;
+                    $stmtUp = $conn->prepare("UPDATE transactions_fake SET status='approved', agent_id=?, admin_note=?, transaction_id=? WHERE id=? AND status='pending'");
+                    if ($stmtUp) {
+                        $stmtUp->bind_param('issi', $adminId, $note, $merchantTxId, $transactionId);
+                        $stmtUp->execute();
+                        $stmtUp->close();
+                    }
+                    return array('success' => true, 'message' => 'Withdrawal payout sent via NEKpay successfully!');
+                } else {
+                    $errMsg = !empty($payoutRes['message']) ? $payoutRes['message'] : 'NEKpay payout failed.';
+                    return array('success' => false, 'message' => 'NEKpay Payout Error: ' . $errMsg);
+                }
+            }
+        }
+
+        // 2. LG Pay Payout Support
+        if (function_exists('lgpay_ensure_schema')) { @lgpay_ensure_schema($conn); }
+        if (function_exists('lgpay_is_available') && lgpay_is_available($conn, false) && function_exists('lgpay_submit_withdrawal_from_transaction')) {
+            return lgpay_submit_withdrawal_from_transaction($conn, $transactionId, $adminId);
+        }
+
+        // 3. Manual Approval Fallback (If no auto-payout gateway is active)
+        $note = 'Approved manually by admin #' . $adminId;
+        $stmtUp = $conn->prepare("UPDATE transactions_fake SET status='approved', agent_id=?, admin_note=? WHERE id=? AND status='pending'");
+        if ($stmtUp) {
+            $stmtUp->bind_param('isi', $adminId, $note, $transactionId);
+            $stmtUp->execute();
+            $stmtUp->close();
+            return array('success' => true, 'message' => 'Withdrawal request approved manually.');
+        }
+
+        return array('success' => false, 'message' => 'Unable to update withdrawal status in database.');
     }
 }
 
