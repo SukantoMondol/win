@@ -100,9 +100,23 @@ if (!empty($admin_logo_path)) {
         <a href="payment_setup.php" class="flex items-center px-6 py-3 text-[#dbece3] hover:bg-[#1f4234] hover:text-white transition <?php echo $current_page == 'payment_setup.php' ? 'bg-[#1f4234] text-white border-l-4 border-[#ffdf1b]' : ''; ?>">
             <span class="mr-3 w-5 text-center">💳</span> <span class="text-sm font-medium">MFS Accounts</span>
         </a>
-        <a href="withdrawal_methods.php" class="flex items-center px-6 py-3 text-[#dbece3] hover:bg-[#1f4234] hover:text-white transition <?php echo $current_page == 'withdrawal_methods.php' ? 'bg-[#1f4234] text-white border-l-4 border-[#ffdf1b]' : ''; ?>">
-            <span class="mr-3 w-5 text-center">🏦</span> <span class="text-sm font-medium">Withdrawal Methods</span>
-        </a>
+        <details class="group" <?php echo ($current_page == 'withdrawal_methods.php' || ($current_page == 'finance.php' && ($_GET['type'] ?? '') == 'withdraw')) ? 'open' : ''; ?>>
+            <summary class="flex items-center justify-between px-6 py-3 text-[#dbece3] hover:bg-[#1f4234] hover:text-white transition cursor-pointer select-none <?php echo ($current_page == 'withdrawal_methods.php' || ($current_page == 'finance.php' && ($_GET['type'] ?? '') == 'withdraw')) ? 'bg-[#1f4234] text-white border-l-4 border-[#ffdf1b]' : ''; ?>">
+                <div class="flex items-center">
+                    <span class="mr-3 w-5 text-center">🏦</span> <span class="text-sm font-medium">Withdrawal System</span>
+                </div>
+                <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180 text-gray-300"></i>
+            </summary>
+            <div class="pl-12 py-1 space-y-1 bg-[#0e5740]">
+                <a href="finance.php?type=withdraw&status=pending&period=lifetime" class="flex items-center justify-between py-2 px-3 text-xs font-bold rounded text-[#dbece3] hover:text-white hover:bg-[#1a4735] transition <?php echo ($current_page == 'finance.php' && ($_GET['status'] ?? '') == 'pending' && ($_GET['type'] ?? '') == 'withdraw') ? 'text-white bg-[#1a4735] font-extrabold' : ''; ?>">
+                    <span>Pending Withdrawals</span>
+                    <span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-black animate-pulse">Pending</span>
+                </a>
+                <a href="withdrawal_methods.php" class="block py-2 px-3 text-xs font-bold rounded text-[#dbece3] hover:text-white hover:bg-[#1a4735] transition <?php echo $current_page == 'withdrawal_methods.php' ? 'text-white bg-[#1a4735] font-extrabold' : ''; ?>">
+                    Withdrawal Methods
+                </a>
+            </div>
+        </details>
         <a href="payment_gateway_settings.php" class="flex items-center px-6 py-3 text-[#dbece3] hover:bg-[#1f4234] hover:text-white transition <?php echo $current_page == 'payment_gateway_settings.php' ? 'bg-[#1f4234] text-white border-l-4 border-[#ffdf1b]' : ''; ?>">
             <span class="mr-3 w-5 text-center">🔐</span> <span class="text-sm font-medium">Payment Gateway</span>
         </a>

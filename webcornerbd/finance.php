@@ -408,24 +408,32 @@ unset($_SESSION['finance_flash']);
                                 <td class="px-6 py-4 text-right">
                                     <?php if($row['type']==='withdraw'): ?>
                                         <?php if($row['status'] === 'pending'): ?>
-                                            <form method="POST" class="inline-flex gap-2">
+                                            <form method="POST" class="inline-flex items-center justify-end gap-2">
                                                 <input type="hidden" name="trx_id" value="<?php echo $row['id']; ?>">
-                                                <button type="submit" name="action" value="approve" onclick="return confirm('Approve this withdrawal?')" class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded transition shadow-sm" title="Approve"><i class="fas fa-check"></i></button>
-                                                <button type="submit" name="action" value="reject" onclick="return confirm('Reject this withdrawal?')" class="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded transition shadow-sm" title="Reject"><i class="fas fa-times"></i></button>
+                                                <button type="submit" name="action" value="approve" onclick="return confirm('Approve this withdrawal?')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-sm text-xs inline-flex items-center gap-1.5 transition active:scale-95" title="Approve Withdrawal">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button type="submit" name="action" value="reject" onclick="return confirm('Reject this withdrawal?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-sm text-xs inline-flex items-center gap-1.5 transition active:scale-95" title="Reject Withdrawal">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
                                             </form>
                                         <?php elseif($row['status'] === 'processing'): ?>
-                                            <span class="inline-flex items-center gap-1 rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700"><i class="fas fa-spinner fa-spin"></i>Processing</span>
+                                            <span class="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 border border-blue-200"><i class="fas fa-spinner fa-spin"></i> Processing</span>
                                         <?php else: ?>
-                                            <span class="text-xs text-gray-400 italic flex items-center justify-end gap-1"><i class="fas fa-lock"></i>Processed</span>
+                                            <span class="text-xs text-gray-400 font-bold italic flex items-center justify-end gap-1"><i class="fas fa-lock"></i> Processed</span>
                                         <?php endif; ?>
                                     <?php elseif($row['status'] === 'pending'): ?>
-                                        <form method="POST" class="inline-flex gap-2">
+                                        <form method="POST" class="inline-flex items-center justify-end gap-2">
                                             <input type="hidden" name="trx_id" value="<?php echo $row['id']; ?>">
-                                            <button type="submit" name="action" value="approve" onclick="return confirm('Confirm deposit approval?')" class="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded transition shadow-sm" title="Approve"><i class="fas fa-check"></i></button>
-                                            <button type="submit" name="action" value="reject" onclick="return confirm('Reject Transaction?')" class="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded transition shadow-sm" title="Reject"><i class="fas fa-times"></i></button>
+                                            <button type="submit" name="action" value="approve" onclick="return confirm('Confirm deposit approval?')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-sm text-xs inline-flex items-center gap-1.5 transition active:scale-95" title="Approve Deposit">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button type="submit" name="action" value="reject" onclick="return confirm('Reject Transaction?')" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3.5 py-1.5 rounded-lg shadow-sm text-xs inline-flex items-center gap-1.5 transition active:scale-95" title="Reject Deposit">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
                                         </form>
                                     <?php else: ?>
-                                        <span class="text-xs text-gray-400 italic flex items-center justify-end gap-1">
+                                        <span class="text-xs text-gray-400 font-bold italic flex items-center justify-end gap-1">
                                             <i class="fas fa-lock"></i> Processed
                                         </span>
                                     <?php endif; ?>
