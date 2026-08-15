@@ -360,11 +360,12 @@ if (!function_exists('wcb_withdraw_add_wallet')) {
         $hash = password_hash($pin, PASSWORD_DEFAULT);
         $code = (string)$method['code'];
         $stmt = $conn->prepare("INSERT INTO player_wallets (user_id, method_id, method, wallet_number, withdraw_pin_hash) VALUES (?, ?, ?, ?, ?)");
-        if (!$stmt) { return array('success' => false, 'message' => 'Unable to save withdrawal account.'); }
+        if (!$stmt) { return array('success' => false, 'message' => 'Unable to save withdrawal account. Error: ' . ($conn->error ?: 'Prepare failed')); }
         $stmt->bind_param('iisss', $userId, $methodId, $code, $accountNumber, $hash);
         $ok = $stmt->execute();
+        $err = $stmt->error;
         $stmt->close();
-        return array('success' => $ok, 'message' => $ok ? 'Withdrawal account saved successfully.' : 'Unable to save withdrawal account.');
+        return array('success' => $ok, 'message' => $ok ? 'Withdrawal account saved successfully.' : 'Unable to save withdrawal account. Error: ' . ($err ?: 'Execute failed'));
     }
 }
 
