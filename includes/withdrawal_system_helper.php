@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/nekpay_gateway_helper.php';
+
 if (!function_exists('wcb_withdraw_table_exists')) {
     function wcb_withdraw_table_exists($conn, $table) {
         $table = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$table);

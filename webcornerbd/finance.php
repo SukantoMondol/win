@@ -9,6 +9,7 @@ require '../includes/functions.php';
 require_once '../includes/propay_gateway_helper.php';
 require_once '../includes/akpay_gateway_helper.php';
 require_once '../includes/lgpay_gateway_helper.php';
+require_once '../includes/nekpay_gateway_helper.php';
 require_once '../includes/referral_system_helper.php';
 require_once '../includes/withdrawal_system_helper.php';
 propay_ensure_schema($conn);
