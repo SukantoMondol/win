@@ -42,8 +42,10 @@ function nekpay_ensure_schema($conn) {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
     $defaultBase = $conn->real_escape_string(nekpay_default_api_base_url());
-    $defaultKey = '7c1adc2ec9f04bc0a00a1c0fd88eee00';
-    @$conn->query("INSERT IGNORE INTO `payment_gateway_settings` (`provider`, `merchant_code`, `secret_code`, `api_base_url`, `is_enabled`, `failover_priority`) VALUES ('nekpay', '', '$defaultKey', '$defaultBase', 1, 1)");
+    $defaultKey  = '7c1adc2ec9f04bc0a00a1c0fd88eee00';
+    $defaultMch  = '808258204';
+    @$conn->query("INSERT IGNORE INTO `payment_gateway_settings` (`provider`, `merchant_code`, `secret_code`, `api_base_url`, `is_enabled`, `failover_priority`) VALUES ('nekpay', '$defaultMch', '$defaultKey', '$defaultBase', 1, 1)");
+    @$conn->query("UPDATE `payment_gateway_settings` SET `merchant_code`='$defaultMch' WHERE `provider`='nekpay' AND (`merchant_code` IS NULL OR `merchant_code`='')");
 
     @$conn->query("ALTER TABLE `transactions_fake` MODIFY `wallet_number` VARCHAR(191) DEFAULT NULL");
 
@@ -53,7 +55,7 @@ function nekpay_ensure_schema($conn) {
 function nekpay_get_settings($conn) {
     nekpay_ensure_schema($conn);
     $settings = array(
-        'merchant_code' => '',
+        'merchant_code' => '808258204',
         'secret_code' => '7c1adc2ec9f04bc0a00a1c0fd88eee00',
         'api_base_url' => nekpay_default_api_base_url(),
         'is_enabled' => 1,
@@ -64,7 +66,7 @@ function nekpay_get_settings($conn) {
     $res = @$conn->query("SELECT merchant_code, secret_code, api_base_url, is_enabled, last_health_status, last_health_checked_at, last_error FROM payment_gateway_settings WHERE provider='nekpay' LIMIT 1");
     if ($res && $res->num_rows > 0) {
         $row = $res->fetch_assoc();
-        $settings['merchant_code'] = trim((string)($row['merchant_code'] ?? ''));
+        $settings['merchant_code'] = trim((string)($row['merchant_code'] ?? '')) ?: '808258204';
         $settings['secret_code'] = trim((string)($row['secret_code'] ?? '')) ?: '7c1adc2ec9f04bc0a00a1c0fd88eee00';
         $settings['api_base_url'] = trim((string)($row['api_base_url'] ?? '')) ?: nekpay_default_api_base_url();
         $settings['is_enabled'] = intval($row['is_enabled'] ?? 1);
