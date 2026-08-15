@@ -410,13 +410,16 @@ function nekpay_create_payout($conn, $merchantTransferId, $bankCode, $accountNum
     $curlErr = curl_error($ch);
     curl_close($ch);
 
+    $logEntry = '[' . date('Y-m-d H:i:s') . '] NEKPAY_PAYOUT_CALL endpoint=' . $endpoint . ' params=' . json_encode($params) . ' curlErr=' . $curlErr . ' rawResponse=' . $response . PHP_EOL;
+    @file_put_contents(__DIR__ . '/../api/game_api_debug.log', $logEntry, FILE_APPEND);
+
     if ($curlErr) {
         return array('success' => false, 'message' => 'Connection Error: ' . $curlErr);
     }
 
     $json = json_decode($response, true);
     if (!$json) {
-        return array('success' => false, 'message' => 'Invalid response from NEKpay payout gateway');
+        return array('success' => false, 'message' => 'Invalid response from NEKpay payout gateway. Raw: ' . substr((string)$response, 0, 200));
     }
 
     $respCode    = $json['respCode'] ?? null;
