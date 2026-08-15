@@ -50,9 +50,21 @@ if (!function_exists('wcb_withdraw_ensure_schema')) {
                 ('USDT', 'usdt', 0, 3),
                 ('TRC20', 'trc20', 0, 4)");
         }
+        @$conn->query("CREATE TABLE IF NOT EXISTS player_wallets (
+            id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            method_id INT NULL DEFAULT NULL,
+            method VARCHAR(50) NOT NULL,
+            wallet_number VARCHAR(120) NOT NULL,
+            withdraw_pin_hash VARCHAR(255) NULL DEFAULT NULL,
+            created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY idx_pw_user (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
         if (wcb_withdraw_table_exists($conn, 'player_wallets')) {
-            @ $conn->query("ALTER TABLE player_wallets MODIFY method VARCHAR(50) NOT NULL");
-            @ $conn->query("ALTER TABLE player_wallets MODIFY wallet_number VARCHAR(120) NOT NULL");
+            @$conn->query("ALTER TABLE player_wallets MODIFY method VARCHAR(50) NOT NULL");
+            @$conn->query("ALTER TABLE player_wallets MODIFY wallet_number VARCHAR(120) NOT NULL");
             wcb_withdraw_add_column($conn, 'player_wallets', 'method_id', "INT NULL DEFAULT NULL AFTER user_id");
             wcb_withdraw_add_column($conn, 'player_wallets', 'withdraw_pin_hash', "VARCHAR(255) NULL DEFAULT NULL AFTER wallet_number");
             wcb_withdraw_add_column($conn, 'player_wallets', 'updated_at', "TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
