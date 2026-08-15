@@ -346,16 +346,22 @@ if (function_exists('get_site_theme_css')) { echo get_site_theme_css($settings ?
 </style>
 
 <div class="float-social-btns">
-    <a href="<?php echo !$is_logged_in ? 'login.php' : $wa_link_attr; ?>" class="float-btn wa-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>">
+    <?php if ($wa_link !== '#'): ?>
+    <a href="<?php echo !$is_logged_in ? 'login.php' : $wa_link_attr; ?>" class="float-btn wa-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>" title="WhatsApp Support">
         <i class="fab fa-whatsapp"></i>
     </a>
-    <a href="<?php echo !$is_logged_in ? 'login.php' : $fb_link_attr; ?>" class="float-btn fb-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>">
+    <?php endif; ?>
+    <?php if ($fb_link !== '#'): ?>
+    <a href="<?php echo !$is_logged_in ? 'login.php' : $fb_link_attr; ?>" class="float-btn fb-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>" title="Facebook Support">
         <i class="fab fa-facebook-f"></i>
     </a>
-    <a href="<?php echo !$is_logged_in ? 'login.php' : $tg_link_attr; ?>" class="float-btn tg-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>">
+    <?php endif; ?>
+    <?php if ($tg_link !== '#'): ?>
+    <a href="<?php echo !$is_logged_in ? 'login.php' : $tg_link_attr; ?>" class="float-btn tg-float" target="<?php echo !$is_logged_in ? '_self' : '_blank'; ?>" title="Telegram Support">
         <i class="fab fa-telegram-plane"></i>
     </a>
-    <a href="<?php echo !$is_logged_in ? 'login.php' : 'support_chat.php'; ?>" class="float-btn live-float">
+    <?php endif; ?>
+    <a href="<?php echo !$is_logged_in ? 'login.php' : 'support_chat.php'; ?>" class="float-btn live-float" title="Live Support Chat">
         <i class="fas fa-headset"></i>
     </a>
 </div>
