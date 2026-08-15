@@ -14,8 +14,22 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-$user_id = $_SESSION['user_id'];
-$username = $_SESSION['username'];
+$user_id = intval($_SESSION['user_id'] ?? 0);
+$username = $_SESSION['username'] ?? '';
+if ($username === '' && $user_id > 0 && isset($conn)) {
+    $uStmt = $conn->prepare("SELECT username FROM users WHERE id=? LIMIT 1");
+    if ($uStmt) {
+        $uStmt->bind_param('i', $user_id);
+        $uStmt->execute();
+        $uRes = $uStmt->get_result();
+        if ($uRes && $uRes->num_rows > 0) {
+            $username = $uRes->fetch_assoc()['username'];
+            $_SESSION['username'] = $username;
+        }
+        $uStmt->close();
+    }
+}
+if ($username === '') { $username = 'User #' . $user_id; }
 
 // 1. Fetch Settings
 $settings = $conn->query("SELECT * FROM settings WHERE id=1")->fetch_assoc();
