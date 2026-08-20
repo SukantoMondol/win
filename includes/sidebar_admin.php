@@ -22,6 +22,17 @@ if (!empty($admin_logo_path)) {
     $admin_logo_file = dirname(__DIR__) . '/' . ltrim($admin_logo_path, '/');
     $admin_logo_version = is_file($admin_logo_file) ? (string)filemtime($admin_logo_file) : '1';
 }
+if (!function_exists('get_admin_logo_src')) {
+    function get_admin_logo_src($path) {
+        $path = trim((string)$path);
+        if ($path === '') return '';
+        if (strpos($path, 'assets/img/logo/data:') === 0) { $path = substr($path, 16); }
+        if (strpos($path, 'data:') === 0 || strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) { return $path; }
+        if (strpos($path, '/') === 0) { return $path; }
+        return '../' . ltrim($path, '/');
+    }
+}
+$admin_logo_clean_src = get_admin_logo_src($admin_logo_path);
 ?>
 
 <style>
@@ -35,8 +46,8 @@ if (!empty($admin_logo_path)) {
             <i class="fas fa-bars text-2xl"></i>
         </button>
         <span class="ml-3 text-lg font-bold tracking-wider font-sans flex items-center gap-2 min-w-0">
-            <?php if(!empty($admin_logo_safe)): ?>
-                <img src="../<?php echo $admin_logo_safe; ?><?php echo $admin_logo_version !== '' ? '?v=' . $admin_logo_version : ''; ?>" class="h-8 w-8 rounded object-contain bg-white/10 p-1" alt="Logo" decoding="async">
+            <?php if(!empty($admin_logo_clean_src)): ?>
+                <img src="<?php echo htmlspecialchars($admin_logo_clean_src); ?>" class="h-8 w-8 rounded object-contain bg-white/10 p-1" alt="Logo" decoding="async">
             <?php endif; ?>
             <span class="truncate"><span class="text-white"><?php echo $admin_brand_safe; ?></span><span class="text-red-500 text-xs">.<?php echo strtoupper($current_role); ?></span></span>
         </span>
@@ -68,8 +79,8 @@ if (!empty($admin_logo_path)) {
     
     <div class="h-16 flex items-center justify-between px-6 border-b border-[#264d3e] bg-[#126E51] shadow-md shrink-0">
         <h1 class="text-xl font-bold tracking-wider font-sans flex items-center gap-2 min-w-0">
-            <?php if(!empty($admin_logo_safe)): ?>
-                <img src="../<?php echo $admin_logo_safe; ?><?php echo $admin_logo_version !== '' ? '?v=' . $admin_logo_version : ''; ?>" class="h-9 w-9 rounded object-contain bg-white/10 p-1 shrink-0" alt="Logo" decoding="async">
+            <?php if(!empty($admin_logo_clean_src)): ?>
+                <img src="<?php echo htmlspecialchars($admin_logo_clean_src); ?>" class="h-9 w-9 rounded object-contain bg-white/10 p-1 shrink-0" alt="Logo" decoding="async">
             <?php endif; ?>
             <span class="truncate"><span class="text-white"><?php echo $admin_brand_safe; ?></span><span class="text-red-600">.<?php echo strtoupper($current_role); ?></span></span>
         </h1>

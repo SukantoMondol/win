@@ -13,9 +13,6 @@ function ensure_settings_column($conn, $column, $definition) {
 }
 
 if (isset($conn) && !$conn->connect_error) {
-    @$conn->query("ALTER TABLE `sliders` MODIFY `image_path` LONGTEXT NOT NULL");
-    @$conn->query("ALTER TABLE `settings` MODIFY `app_logo` LONGTEXT DEFAULT NULL");
-    @$conn->query("ALTER TABLE `settings` MODIFY `popup_image` LONGTEXT DEFAULT NULL");
     ensure_settings_column($conn, 'admin_panel_name', "varchar(120) DEFAULT NULL");
     ensure_settings_column($conn, 'app_logo', "LONGTEXT DEFAULT NULL");
     ensure_settings_column($conn, 'telegram_link', "varchar(255) DEFAULT '#'");
@@ -38,6 +35,8 @@ if (!function_exists('get_wcb_img_src')) {
     function get_wcb_img_src($path, $prefix = '') {
         $path = trim((string)$path);
         if ($path === '') return '';
+        if (strpos($path, 'assets/img/logo/data:') === 0) { $path = substr($path, 16); }
+        if (strpos($path, 'assets/img/banners/data:') === 0) { $path = substr($path, 19); }
         if (strpos($path, 'data:') === 0 || strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) {
             return $path;
         }
@@ -180,7 +179,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
     if (isset($_FILES['app_logo']) && $_FILES['app_logo']['error'] == 0) {
         $logo_res = wcb_save_uploaded_file($_FILES['app_logo'], "assets/img/logo/", "site_logo_");
         if (!empty($logo_res['ok']) && !empty($logo_res['filename'])) {
-            $app_logo_path = "assets/img/logo/" . $logo_res['filename'];
+            $fn = $logo_res['filename'];
+            $app_logo_path = (strpos($fn, 'data:') === 0 || !empty($logo_res['is_data_uri'])) ? $fn : ("assets/img/logo/" . $fn);
         }
     }
 
@@ -188,7 +188,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_general'])) {
     if (isset($_FILES['popup_image']) && $_FILES['popup_image']['error'] == 0) {
         $popup_res = wcb_save_uploaded_file($_FILES['popup_image'], "assets/img/banners/", "popup_");
         if (!empty($popup_res['ok']) && !empty($popup_res['filename'])) {
-            $popup_image_path = "assets/img/banners/" . $popup_res['filename'];
+            $fn = $popup_res['filename'];
+            $popup_image_path = (strpos($fn, 'data:') === 0 || !empty($popup_res['is_data_uri'])) ? $fn : ("assets/img/banners/" . $fn);
         }
     }
 
@@ -318,7 +319,7 @@ $sliders = $conn->query("SELECT * FROM sliders ORDER BY id DESC");
                                     <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Website / Admin Logo</label>
                                     <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-3">
                                         <?php if(!empty($settings['app_logo'])): ?>
-                                            <img src="../<?php echo htmlspecialchars($settings['app_logo']); ?>?v=<?php echo time(); ?>" class="h-12 w-12 object-contain rounded bg-white border" alt="Logo">
+                                            <img src="<?php echo htmlspecialchars(get_wcb_img_src($settings['app_logo'], '../')); ?>" class="h-12 w-12 object-contain rounded bg-white border" alt="Logo">
                                         <?php else: ?>
                                             <div class="h-12 w-12 rounded bg-indigo-100 flex items-center justify-center text-indigo-600"><i class="fas fa-image"></i></div>
                                         <?php endif; ?>
