@@ -54,42 +54,69 @@ if (!function_exists('wcb_save_uploaded_file')) {
             return array('ok' => false, 'error' => 'Uploaded temporary file missing on server.');
         }
 
-        $clean_rel = ltrim(str_replace('../', '', $target_dir), '/');
-        $abs_dir = dirname(__DIR__) . '/' . $clean_rel;
-
-        if (!is_dir($abs_dir)) {
-            if (!@mkdir($abs_dir, 0777, true)) {
-                return array('ok' => false, 'error' => 'Failed to create target directory: ' . $clean_rel);
-            }
-        }
-        @chmod($abs_dir, 0777);
-
         $ext = strtolower(pathinfo($file["name"], PATHINFO_EXTENSION));
         $allowed = array("jpg", "png", "jpeg", "gif", "webp", "svg");
         if (!in_array($ext, $allowed, true)) {
             return array('ok' => false, 'error' => 'Invalid file extension (.' . $ext . '). Allowed: JPG, PNG, WEBP, GIF, SVG');
         }
 
+        $clean_rel = ltrim(str_replace('../', '', $target_dir), '/');
         $new_name = $prefix . time() . "_" . rand(100, 999) . "." . $ext;
-        $target_file = rtrim($abs_dir, '/') . '/' . $new_name;
 
-        $tmp = $file["tmp_name"];
-        $saved = @move_uploaded_file($tmp, $target_file);
-        if (!$saved) {
-            $saved = @copy($tmp, $target_file);
-        }
-        if (!$saved && file_exists($tmp)) {
-            $content = @file_get_contents($tmp);
-            if ($content !== false && strlen($content) > 0) {
-                $saved = (@file_put_contents($target_file, $content) !== false);
+        // Try multiple possible root paths on VPS / EasyPanel / Local
+        $possible_roots = array(
+            dirname(__DIR__),
+            $_SERVER['DOCUMENT_ROOT'] ?? '',
+            '/app',
+            '/var/www/html',
+            '/Applications/XAMPP/xamppfiles/htdocs/jb66.net'
+        );
+
+        $saved = false;
+        $saved_rel_path = '';
+
+        foreach ($possible_roots as $root) {
+            if (empty($root)) continue;
+            $abs_dir = rtrim($root, '/') . '/' . $clean_rel;
+            if (!is_dir($abs_dir)) {
+                @mkdir($abs_dir, 0777, true);
+            }
+            @chmod($abs_dir, 0777);
+
+            if (is_dir($abs_dir) && is_writable($abs_dir)) {
+                $target_file = rtrim($abs_dir, '/') . '/' . $new_name;
+                $tmp = $file["tmp_name"];
+                $saved = @move_uploaded_file($tmp, $target_file);
+                if (!$saved) {
+                    $saved = @copy($tmp, $target_file);
+                }
+                if (!$saved && file_exists($tmp)) {
+                    $content = @file_get_contents($tmp);
+                    if ($content !== false && strlen($content) > 0) {
+                        $saved = (@file_put_contents($target_file, $content) !== false);
+                    }
+                }
+                if ($saved) {
+                    @chmod($target_file, 0666);
+                    $saved_rel_path = $new_name;
+                    break;
+                }
             }
         }
 
         if ($saved) {
-            @chmod($target_file, 0666);
-            return array('ok' => true, 'filename' => $new_name);
+            return array('ok' => true, 'filename' => $saved_rel_path);
         }
-        return array('ok' => false, 'error' => 'Unable to write file to target directory.');
+
+        // Ultimate Fallback: Save as Data URI Base64 if file system is read-only
+        $tmpContent = @file_get_contents($file["tmp_name"]);
+        if ($tmpContent !== false && strlen($tmpContent) > 0) {
+            $mime = 'image/' . ($ext === 'svg' ? 'svg+xml' : ($ext === 'jpg' ? 'jpeg' : $ext));
+            $dataUri = 'data:' . $mime . ';base64,' . base64_encode($tmpContent);
+            return array('ok' => true, 'filename' => $dataUri, 'is_data_uri' => true);
+        }
+
+        return array('ok' => false, 'error' => 'Unable to write file to target directory. Check server folder permissions.');
     }
 }
 
@@ -165,8 +192,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['upload_slider'])) {
         $res = wcb_save_uploaded_file($_FILES['slider_image'], "assets/img/banners/", "banner_");
         if (!empty($res['ok']) && !empty($res['filename'])) {
             $saved_slider = $res['filename'];
-            $db_path = "assets/img/banners/" . $saved_slider;
-            $conn->query("INSERT INTO sliders (image_path, status, sort_order) VALUES ('$db_path', 'active', 0)");
+            $db_path = !empty($res['is_data_uri']) ? $saved_slider : ("assets/img/banners/" . $saved_slider);
+            $stmt_slide = $conn->prepare("INSERT INTO sliders (image_path, status, sort_order) VALUES (?, 'active', 0)");
+            if ($stmt_slide) {
+                $stmt_slide->bind_param('s', $db_path);
+                $stmt_slide->execute();
+                $stmt_slide->close();
+            }
             $msg = "New Banner Uploaded Successfully!";
             $msg_type = "success";
         } else {

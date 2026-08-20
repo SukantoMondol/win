@@ -66,12 +66,62 @@ function promo_upload_image($field = 'promo_image') {
     $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
     $allowed = array('jpg','jpeg','png','webp','gif');
     if (!in_array($ext, $allowed, true)) return array('ok' => false, 'error' => 'Invalid banner type. Use JPG, PNG, WEBP or GIF.');
-    if (!@getimagesize($file['tmp_name'])) return array('ok' => false, 'error' => 'Uploaded file is not a valid image.');
-    $targetDir = __DIR__ . '/../assets/img/promos/';
-    if (!is_dir($targetDir)) @mkdir($targetDir, 0777, true);
-    $name = 'promo_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
-    if (!move_uploaded_file($file['tmp_name'], $targetDir . $name)) return array('ok' => false, 'error' => 'Unable to save banner image.');
-    return array('ok' => true, 'path' => 'assets/img/promos/' . $name);
+
+    $new_name = 'promo_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
+
+    $possible_roots = array(
+        dirname(__DIR__),
+        $_SERVER['DOCUMENT_ROOT'] ?? '',
+        '/app',
+        '/var/www/html',
+        '/Applications/XAMPP/xamppfiles/htdocs/jb66.net'
+    );
+
+    $saved = false;
+    $saved_path = '';
+
+    foreach ($possible_roots as $root) {
+        if (empty($root)) continue;
+        $abs_dir = rtrim($root, '/') . '/assets/img/promos/';
+        if (!is_dir($abs_dir)) {
+            @mkdir($abs_dir, 0777, true);
+        }
+        @chmod($abs_dir, 0777);
+
+        if (is_dir($abs_dir) && is_writable($abs_dir)) {
+            $target_file = $abs_dir . $new_name;
+            $tmp = $file['tmp_name'];
+            $saved = @move_uploaded_file($tmp, $target_file);
+            if (!$saved) {
+                $saved = @copy($tmp, $target_file);
+            }
+            if (!$saved && file_exists($tmp)) {
+                $content = @file_get_contents($tmp);
+                if ($content !== false && strlen($content) > 0) {
+                    $saved = (@file_put_contents($target_file, $content) !== false);
+                }
+            }
+            if ($saved) {
+                @chmod($target_file, 0666);
+                $saved_path = 'assets/img/promos/' . $new_name;
+                break;
+            }
+        }
+    }
+
+    if ($saved) {
+        return array('ok' => true, 'path' => $saved_path);
+    }
+
+    // Ultimate Fallback: Base64 Data URI
+    $tmpContent = @file_get_contents($file['tmp_name']);
+    if ($tmpContent !== false && strlen($tmpContent) > 0) {
+        $mime = 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext);
+        $dataUri = 'data:' . $mime . ';base64,' . base64_encode($tmpContent);
+        return array('ok' => true, 'path' => $dataUri);
+    }
+
+    return array('ok' => false, 'error' => 'Unable to save banner image. Check server directory permissions.');
 }
 
 promo_ensure_schema($conn);
