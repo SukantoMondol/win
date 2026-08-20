@@ -45,7 +45,7 @@ if (!function_exists('wcb_pwa_normalize_path')) {
     function wcb_pwa_normalize_path($path, $fallback = '/assets/icons/icon-192.png') {
         $path = trim((string)$path);
         if ($path === '') return $fallback;
-        if (preg_match('~^https?://~i', $path)) return $path;
+        if (strpos($path, 'data:') === 0 || preg_match('~^https?://~i', $path)) return $path;
         return '/' . ltrim($path, '/');
     }
 }
@@ -159,36 +159,91 @@ if (!function_exists('wcb_pwa_handle_icon_upload')) {
             return array('ok' => false, 'error' => 'Icon file is too large. Maximum 8MB allowed.');
         }
         $ext = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
-        $allowed = array('jpg', 'jpeg', 'png', 'webp', 'gif');
+        $allowed = array('jpg', 'jpeg', 'png', 'webp', 'gif', 'svg');
         if (!in_array($ext, $allowed, true)) {
-            return array('ok' => false, 'error' => 'Invalid icon type. Use PNG, JPG, WEBP or GIF.');
+            return array('ok' => false, 'error' => 'Invalid icon type. Use PNG, JPG, WEBP, GIF or SVG.');
         }
-        if (!@getimagesize($file['tmp_name'])) {
-            return array('ok' => false, 'error' => 'Uploaded file is not a valid image.');
-        }
-        $targetDir = dirname(__DIR__) . '/assets/icons/';
-        if (!is_dir($targetDir)) @mkdir($targetDir, 0777, true);
+
         $stamp = time() . '_' . bin2hex(random_bytes(3));
         $originalName = 'pwa_app_original_' . $stamp . '.' . $ext;
-        $originalPath = $targetDir . $originalName;
-        if (!move_uploaded_file($file['tmp_name'], $originalPath)) {
-            return array('ok' => false, 'error' => 'Unable to save uploaded icon.');
-        }
-        $paths = array(
-            'original' => 'assets/icons/' . $originalName,
-            'icon_192' => 'assets/icons/' . $originalName,
-            'icon_512' => 'assets/icons/' . $originalName,
-            'maskable_192' => 'assets/icons/' . $originalName,
-            'maskable_512' => 'assets/icons/' . $originalName,
+
+        $possible_roots = array(
+            dirname(__DIR__),
+            $_SERVER['DOCUMENT_ROOT'] ?? '',
+            '/app',
+            '/var/www/html',
+            '/Applications/XAMPP/xamppfiles/htdocs/jb66.net'
         );
+
+        $saved = false;
+        $originalPath = '';
+        $saved_rel_path = '';
+
+        foreach ($possible_roots as $root) {
+            if (empty($root)) continue;
+            $abs_dir = rtrim($root, '/') . '/assets/icons/';
+            if (!is_dir($abs_dir)) {
+                @mkdir($abs_dir, 0777, true);
+            }
+            @chmod($abs_dir, 0777);
+
+            $target_file = $abs_dir . $originalName;
+            $tmp = $file['tmp_name'];
+            $saved = @move_uploaded_file($tmp, $target_file);
+            if (!$saved) {
+                $saved = @copy($tmp, $target_file);
+            }
+            if (!$saved && file_exists($tmp)) {
+                $content = @file_get_contents($tmp);
+                if ($content !== false && strlen($content) > 0) {
+                    $saved = (@file_put_contents($target_file, $content) !== false);
+                }
+            }
+            if ($saved) {
+                @chmod($target_file, 0666);
+                $originalPath = $target_file;
+                $saved_rel_path = 'assets/icons/' . $originalName;
+                break;
+            }
+        }
+
+        if (!$saved) {
+            // Ultimate Fallback: Base64 Data URI
+            $tmpContent = @file_get_contents($file['tmp_name']);
+            if ($tmpContent !== false && strlen($tmpContent) > 0) {
+                $mime = 'image/' . ($ext === 'svg' ? 'svg+xml' : ($ext === 'jpg' ? 'jpeg' : $ext));
+                $dataUri = 'data:' . $mime . ';base64,' . base64_encode($tmpContent);
+                $paths = array(
+                    'original' => $dataUri,
+                    'icon_192' => $dataUri,
+                    'icon_512' => $dataUri,
+                    'maskable_192' => $dataUri,
+                    'maskable_512' => $dataUri,
+                );
+                return array('ok' => true, 'paths' => $paths);
+            }
+            return array('ok' => false, 'error' => 'Unable to save uploaded icon. Check server folder permissions.');
+        }
+
+        $paths = array(
+            'original' => $saved_rel_path,
+            'icon_192' => $saved_rel_path,
+            'icon_512' => $saved_rel_path,
+            'maskable_192' => $saved_rel_path,
+            'maskable_512' => $saved_rel_path,
+        );
+
+        $targetDir = dirname($originalPath) . '/';
         $icon192 = $targetDir . 'pwa_app_192_' . $stamp . '.png';
         $icon512 = $targetDir . 'pwa_app_512_' . $stamp . '.png';
         $mask192 = $targetDir . 'pwa_app_maskable_192_' . $stamp . '.png';
         $mask512 = $targetDir . 'pwa_app_maskable_512_' . $stamp . '.png';
+
         if (wcb_pwa_resize_icon($originalPath, $icon192, 192, false)) $paths['icon_192'] = 'assets/icons/' . basename($icon192);
         if (wcb_pwa_resize_icon($originalPath, $icon512, 512, false)) $paths['icon_512'] = 'assets/icons/' . basename($icon512);
         if (wcb_pwa_resize_icon($originalPath, $mask192, 192, true)) $paths['maskable_192'] = 'assets/icons/' . basename($mask192);
         if (wcb_pwa_resize_icon($originalPath, $mask512, 512, true)) $paths['maskable_512'] = 'assets/icons/' . basename($mask512);
+
         return array('ok' => true, 'paths' => $paths);
     }
 }
