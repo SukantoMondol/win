@@ -28,8 +28,17 @@ if (isset($conn) && !$conn->connect_error) {
         $settings = $res->fetch_assoc();
     }
 }
-$site_name = !empty($settings['site_name']) ? $settings['site_name'] : 'SHA75';
-$app_logo_src = !empty($settings['app_logo']) ? $settings['app_logo'] : 'assets/img/app_logo.jpeg';
+$raw_logo = trim((string)($settings['app_logo'] ?? ''));
+if (strpos($raw_logo, 'assets/img/logo/data:') === 0) {
+    $raw_logo = substr($raw_logo, 16);
+}
+if ($raw_logo === '') {
+    $app_logo_src = '/assets/img/app_logo.jpeg';
+} elseif (strpos($raw_logo, 'data:') === 0 || strpos($raw_logo, 'http://') === 0 || strpos($raw_logo, 'https://') === 0) {
+    $app_logo_src = $raw_logo;
+} else {
+    $app_logo_src = '/' . ltrim($raw_logo, '/');
+}
 
 $sliders = isset($conn) && !$conn->connect_error ? $conn->query("SELECT * FROM sliders WHERE status='active' ORDER BY sort_order ASC") : false;
 
