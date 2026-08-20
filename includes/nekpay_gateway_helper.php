@@ -367,72 +367,99 @@ function nekpay_apply_deposit_success($conn, $data, $source = 'ipn') {
 function nekpay_create_payout($conn, $merchantTransferId, $bankCode, $accountNumber, $receiverName, $amount) {
     $config = nekpay_get_settings($conn);
     if (empty($config['is_enabled'])) {
-        return array('success' => false, 'message' => 'NEKpay gateway is currently disabled.');
+        return array('success' => false, 'message' => 'NEKpay gateway is currently disabled. Enable NEKpay in Payment Gateway Settings.');
     }
 
     $merchantId = $config['merchant_code'];
     $payoutKey  = $config['secret_code'];
     $apiBase    = rtrim($config['api_base_url'], '/');
 
-    $holderName = preg_replace('/[^a-zA-Z]/', '', $receiverName ?? '');
-    if (strlen($holderName) < 5) {
+    if (empty($merchantId) || empty($payoutKey)) {
+        return array('success' => false, 'message' => 'NEKpay Merchant ID or Secret Code is missing. Configure NEKpay in Admin Panel.');
+    }
+
+    $holderName = preg_replace('/[^a-zA-Z ]/', '', $receiverName ?? '');
+    if (strlen(trim($holderName)) < 3) {
         $holderName = 'CustomerAccount';
     }
 
     $backUrl = nekpay_url('/api/nekpay_payout_callback.php');
+    $formattedAmount = number_format((float)$amount, 2, '.', '');
 
     $params = array(
         'apply_date'      => date('Y-m-d H:i:s'),
         'back_url'        => $backUrl,
-        'bank_code'       => (string)$bankCode, // 'baksh' for bKash, 'ngand' for Nagad
-        'mch_id'          => $merchantId,
+        'bank_code'       => (string)$bankCode,
+        'mch_id'          => (string)$merchantId,
         'mch_transferId'  => (string)$merchantTransferId,
         'receive_account' => (string)$accountNumber,
-        'receive_name'    => $holderName,
-        'transfer_amount' => (string)(int)$amount,
+        'receive_name'    => trim($holderName),
+        'transfer_amount' => $formattedAmount,
         'sign_type'       => 'MD5',
     );
 
     $params['sign'] = nekpay_generate_payout_sign($params, $payoutKey);
-
     $endpoint = $apiBase . '/pay/transfer';
 
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $endpoint);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+    $executeRequest = function($currentParams) use ($endpoint) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $endpoint);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($currentParams));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+        $resp = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+        return array('response' => $resp, 'error' => $err);
+    };
 
-    $response = curl_exec($ch);
-    $curlErr = curl_error($ch);
-    curl_close($ch);
+    $result = $executeRequest($params);
+    $response = $result['response'];
+    $curlErr  = $result['error'];
 
     $logEntry = '[' . date('Y-m-d H:i:s') . '] NEKPAY_PAYOUT_CALL endpoint=' . $endpoint . ' params=' . json_encode($params) . ' curlErr=' . $curlErr . ' rawResponse=' . $response . PHP_EOL;
     @file_put_contents(__DIR__ . '/../api/game_api_debug.log', $logEntry, FILE_APPEND);
 
     if ($curlErr) {
-        return array('success' => false, 'message' => 'Connection Error: ' . $curlErr);
+        return array('success' => false, 'message' => 'NEKpay Connection Error: ' . $curlErr);
     }
 
     $json = json_decode($response, true);
-    if (!$json) {
-        return array('success' => false, 'message' => 'Invalid response from NEKpay payout gateway. Raw: ' . substr((string)$response, 0, 200));
+
+    // Channel fallback retry if channel code is invalid
+    if (!$json || (($json['respCode'] ?? '') !== 'SUCCESS' && strpos(($json['errorMsg'] ?? ''), 'CHANNEL') !== false)) {
+        $altBankCode = ($bankCode === 'baksh') ? '2222' : (($bankCode === 'ngand') ? '2221' : $bankCode);
+        if ($altBankCode !== $bankCode) {
+            $params['bank_code'] = $altBankCode;
+            $params['sign'] = nekpay_generate_payout_sign($params, $payoutKey);
+            $result2 = $executeRequest($params);
+            if (!empty($result2['response'])) {
+                $json2 = json_decode($result2['response'], true);
+                if ($json2 && (($json2['respCode'] ?? '') === 'SUCCESS' || ($json2['tradeResult'] ?? '') === '0' || ($json2['tradeResult'] ?? '') === 0)) {
+                    $json = $json2;
+                }
+            }
+        }
     }
 
-    $respCode    = $json['respCode'] ?? null;
-    $tradeResult = $json['tradeResult'] ?? null;
+    if (!$json) {
+        return array('success' => false, 'message' => 'Invalid response from NEKpay gateway: ' . substr((string)$response, 0, 150));
+    }
 
-    if ($respCode === 'SUCCESS' && ($tradeResult === '0' || $tradeResult === '1' || $tradeResult === 0 || $tradeResult === 1)) {
+    $respCode    = strtoupper((string)($json['respCode'] ?? ''));
+    $tradeResult = (string)($json['tradeResult'] ?? '');
+
+    if ($respCode === 'SUCCESS' || $tradeResult === '0' || $tradeResult === '1' || $tradeResult === 'SUCCESS') {
         return array(
             'success' => true,
             'trx_id'  => $json['tradeNo'] ?? $merchantTransferId,
             'message' => 'Payout initiated successfully via NEKpay'
         );
     } else {
-        $errorMsg = $json['errorMsg'] ?? json_encode($json);
+        $errorMsg = $json['errorMsg'] ?? ($json['tradeMsg'] ?? json_encode($json));
         return array('success' => false, 'message' => 'NEKpay Payout Error: ' . $errorMsg);
     }
 }
