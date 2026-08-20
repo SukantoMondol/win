@@ -582,7 +582,11 @@ $pwa_banner_version = isset($pwa['version']) ? max(1, intval($pwa['version'])) :
                     <?php if($sliders && $sliders->num_rows > 0):
                         while($slide = $sliders->fetch_assoc()): ?>
                         <div class="swiper-slide">
-                            <img src="<?php echo $slide['image_path']; ?>" loading="lazy" decoding="async" style="width:100%;height:170px;object-fit:cover;display:block;border-radius:12px">
+                            <?php 
+                            $s_path = trim((string)$slide['image_path']);
+                            $s_src = (strpos($s_path, 'data:') === 0 || strpos($s_path, 'http') === 0 || strpos($s_path, '/') === 0) ? $s_path : ('/' . ltrim($s_path, '/'));
+                            ?>
+                            <img src="<?php echo $s_src; ?>" loading="lazy" decoding="async" style="width:100%;height:170px;object-fit:cover;display:block;border-radius:12px">
                         </div>
                     <?php endwhile; else: ?>
                         <div class="swiper-slide">

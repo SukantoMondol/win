@@ -34,6 +34,30 @@ $msg_type = "";
 
 // 1. HANDLE GENERAL SETTINGS UPDATE
 // Global helper for robust file upload with detailed status
+if (!function_exists('get_wcb_img_src')) {
+    function get_wcb_img_src($path, $prefix = '') {
+        $path = trim((string)$path);
+        if ($path === '') return '';
+        if (strpos($path, 'data:') === 0 || strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) {
+            return $path;
+        }
+        if (strpos($path, '/') === 0) {
+            return $path;
+        }
+        return $prefix . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('get_wcb_img_label')) {
+    function get_wcb_img_label($path) {
+        $path = trim((string)$path);
+        if (strpos($path, 'data:') === 0) {
+            return 'Uploaded Banner';
+        }
+        return basename($path);
+    }
+}
+
 if (!function_exists('wcb_save_uploaded_file')) {
     function wcb_save_uploaded_file($file, $target_dir, $prefix = 'img_') {
         if (!isset($file) || !is_array($file)) {
@@ -86,24 +110,22 @@ if (!function_exists('wcb_save_uploaded_file')) {
             }
             @chmod($abs_dir, 0777);
 
-            if (is_dir($abs_dir) && is_writable($abs_dir)) {
-                $target_file = rtrim($abs_dir, '/') . '/' . $new_name;
-                $tmp = $file["tmp_name"];
-                $saved = @move_uploaded_file($tmp, $target_file);
-                if (!$saved) {
-                    $saved = @copy($tmp, $target_file);
+            $target_file = rtrim($abs_dir, '/') . '/' . $new_name;
+            $tmp = $file["tmp_name"];
+            $saved = @move_uploaded_file($tmp, $target_file);
+            if (!$saved) {
+                $saved = @copy($tmp, $target_file);
+            }
+            if (!$saved && file_exists($tmp)) {
+                $content = @file_get_contents($tmp);
+                if ($content !== false && strlen($content) > 0) {
+                    $saved = (@file_put_contents($target_file, $content) !== false);
                 }
-                if (!$saved && file_exists($tmp)) {
-                    $content = @file_get_contents($tmp);
-                    if ($content !== false && strlen($content) > 0) {
-                        $saved = (@file_put_contents($target_file, $content) !== false);
-                    }
-                }
-                if ($saved) {
-                    @chmod($target_file, 0666);
-                    $saved_rel_path = $new_name;
-                    break;
-                }
+            }
+            if ($saved) {
+                @chmod($target_file, 0666);
+                $saved_rel_path = $new_name;
+                break;
             }
         }
 
@@ -479,9 +501,9 @@ $sliders = $conn->query("SELECT * FROM sliders ORDER BY id DESC");
                                     <?php while($row = $sliders->fetch_assoc()): ?>
                                     <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 group hover:border-indigo-200 transition">
                                         <div class="flex items-center gap-3">
-                                            <img src="../<?php echo $row['image_path']; ?>" class="w-24 h-12 object-cover rounded border border-gray-200 shadow-sm" alt="Banner">
+                                            <img src="<?php echo get_wcb_img_src($row['image_path'], '../'); ?>" class="w-24 h-12 object-cover rounded border border-gray-200 shadow-sm" alt="Banner">
                                             <div class="flex-1 overflow-hidden">
-                                                <p class="text-xs text-gray-500 truncate w-32"><?php echo basename($row['image_path']); ?></p>
+                                                <p class="text-xs text-gray-500 truncate w-32"><?php echo get_wcb_img_label($row['image_path']); ?></p>
                                                 <span class="text-[10px] bg-green-100 text-green-600 px-1.5 rounded font-bold">Active</span>
                                             </div>
                                         </div>
