@@ -55,6 +55,7 @@ function promo_ensure_schema($conn) {
     // Make category flexible so WELCOME/SLOTS tabs can be managed without enum errors.
     @$conn->query("ALTER TABLE promotions MODIFY category varchar(50) DEFAULT 'all'");
     @$conn->query("ALTER TABLE promotions MODIFY status varchar(20) DEFAULT 'active'");
+    @$conn->query("ALTER TABLE promotions MODIFY image_url LONGTEXT DEFAULT NULL");
 }
 
 function promo_upload_image($field = 'promo_image') {

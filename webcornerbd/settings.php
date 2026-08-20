@@ -13,8 +13,11 @@ function ensure_settings_column($conn, $column, $definition) {
 }
 
 if (isset($conn) && !$conn->connect_error) {
+    @$conn->query("ALTER TABLE `sliders` MODIFY `image_path` LONGTEXT NOT NULL");
+    @$conn->query("ALTER TABLE `settings` MODIFY `app_logo` LONGTEXT DEFAULT NULL");
+    @$conn->query("ALTER TABLE `settings` MODIFY `popup_image` LONGTEXT DEFAULT NULL");
     ensure_settings_column($conn, 'admin_panel_name', "varchar(120) DEFAULT NULL");
-    ensure_settings_column($conn, 'app_logo', "varchar(255) DEFAULT NULL");
+    ensure_settings_column($conn, 'app_logo', "LONGTEXT DEFAULT NULL");
     ensure_settings_column($conn, 'telegram_link', "varchar(255) DEFAULT '#'");
     ensure_settings_column($conn, 'facebook_link', "varchar(255) DEFAULT '#'");
     ensure_settings_column($conn, 'instagram_link', "varchar(255) DEFAULT '#'");
