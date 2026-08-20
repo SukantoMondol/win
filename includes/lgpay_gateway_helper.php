@@ -75,8 +75,7 @@ function lgpay_ensure_schema($conn) {
         lgpay_add_column_if_missing($conn, 'payment_gateway_settings', 'last_error', "TEXT DEFAULT NULL AFTER `last_health_checked_at`");
 
         $defaultBase = $conn->real_escape_string(lgpay_default_api_base_url());
-        @$conn->query("INSERT IGNORE INTO `payment_gateway_settings` (`provider`, `merchant_code`, `secret_code`, `api_base_url`, `is_enabled`, `failover_priority`) VALUES ('lgpay', '', '', '$defaultBase', 1, 1)");
-        wcb_force_lgpay_only($conn);
+        @$conn->query("INSERT IGNORE INTO `payment_gateway_settings` (`provider`, `merchant_code`, `secret_code`, `api_base_url`, `is_enabled`, `failover_priority`) VALUES ('lgpay', '', '', '$defaultBase', 0, 1)");
     }
 
     if (lgpay_table_exists($conn, 'payment_gateway_orders')) {
